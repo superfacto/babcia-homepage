@@ -2,6 +2,8 @@
 
 A simple, big-text homepage for a Polish grandma in Auckland.
 
+**Live:** https://babcia-homepage.netlify.app
+
 - **Weather** — Auckland and a chosen Polish city: right now + the next 7 days.
   Uses [Open-Meteo](https://open-meteo.com), falls back to [MET Norway](https://api.met.no) if it's down. No API keys.
 - **Clocks** — Auckland and Poland time.
@@ -12,7 +14,7 @@ A simple, big-text homepage for a Polish grandma in Auckland.
 ## Updating events
 
 Events are hand-curated. Edit the `EVENTS` list near the top of the `<script>` in `index.html`
-(`start`/`end` are `YYYY-MM-DD`; use `weekly: 0–6` for a repeating weekday event), then redeploy.
+(`start`/`end` are `YYYY-MM-DD`; use `weekly: 0–6` for a repeating weekday event), then push to `main` — Netlify auto-deploys it to https://babcia-homepage.netlify.app.
 
 ## Run locally
 
