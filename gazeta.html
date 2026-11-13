@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pl">
+<html lang="pl" data-page="gazeta">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -102,7 +102,7 @@
     <h1>Gazeta Babci</h1>
     <div class="sub"><span id="date"></span><span>Wiadomości z wPolityce.pl</span></div>
   </header>
-  <nav class="sections" id="nav"></nav>
+  <nav class="sections" id="nav" data-sec="gazeta-dzialy"></nav>
   <main id="paper"><div class="status">Ładowanie gazety…</div></main>
   <footer>
     Wszystkie artykuły pochodzą z <a href="https://wpolityce.pl" target="_blank" rel="noopener">wPolityce.pl</a> (oficjalne kanały RSS) — kliknij „Czytaj całość”, aby przeczytać artykuł na ich stronie.
@@ -111,6 +111,7 @@
 </div>
 <a class="totop" href="#">↑ Do góry</a>
 
+<script src="track.js"></script>
 <script>
 const TZ = "Pacific/Auckland";
 const esc = (s = "") => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -155,7 +156,7 @@ async function load() {
   document.getElementById("nav").innerHTML = sections.map(s => `<a href="#${s.slug}">${esc(s.name)}</a>`).join("");
 
   const front = lead ? `
-    <div class="front">
+    <div class="front" data-sec="gazeta-pierwsza-strona">
       <article class="lead-story">
         ${img(lead)}
         <div class="kicker">${esc(lead.sec)}</div>
@@ -178,7 +179,7 @@ async function load() {
     const items = s.items.filter(it => !used.has(it.link)).slice(0, 6);
     if (!items.length) return "";
     const [first, ...rest] = items;
-    return `<section class="sec" id="${s.slug}">
+    return `<section class="sec" id="${s.slug}" data-sec="gazeta-${s.slug}">
       <h2>${esc(s.name)} <a class="all" href="https://wpolityce.pl/${s.slug === "tygodniksieci" ? "tygodnik-sieci/" + new Date().getFullYear() : s.slug}" target="_blank" rel="noopener">więcej →</a></h2>
       <article class="first">
         ${img(first)}
@@ -195,6 +196,7 @@ async function load() {
     </section>`;
   });
   paper.innerHTML = front + `<div class="grid">${secs.join("")}</div>`;
+  window.trackObserve && window.trackObserve(); // let the tracker see the new sections
   document.getElementById("updated").textContent = "Zaktualizowano: " +
     new Intl.DateTimeFormat("pl-PL", { hour: "2-digit", minute: "2-digit", timeZone: TZ }).format(new Date(data.updated)) + ".";
 }

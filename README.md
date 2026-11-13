@@ -26,6 +26,10 @@ A simple, big-text homepage for a Polish grandma in Auckland.
   with the next Mass times converted to Auckland time.
 - **A− / A+** text size buttons (remembered on the device).
 - **Installable** — `manifest.webmanifest` + `apple-touch-icon.png`: on iPad, Safari → Share → *Add to Home Screen*.
+- **Private usage stats** — `track.js` sends anonymous events (opens, time on screen, sections reached, taps,
+  radio minutes; never typed text) to `/api/track`, stored in this site's Netlify Blobs (`usage` store).
+  Dashboard: `/statystyki.html`, locked by the `STATS_KEY` env var. Label her iPad once with `?device=babcia`;
+  exclude your own devices with `?notrack=1`.
 - Polish by default, with an English button.
 
 ## Updating events

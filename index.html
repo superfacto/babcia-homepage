@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pl">
+<html lang="pl" data-page="home">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -228,7 +228,7 @@
 <body>
 <div class="flag"></div>
 <div class="wrap">
-  <header>
+  <header data-sec="naglowek">
     <div>
       <h1 id="greeting"></h1>
       <div class="today" id="today"></div>
@@ -244,7 +244,7 @@
     </div>
   </header>
 
-  <div class="card today-card" id="today-card">
+  <div class="card today-card" id="today-card" data-sec="dzis">
     <div class="today-row" id="imieniny-row"></div>
     <div class="today-row" id="liturgy-row" hidden></div>
     <div id="family-row"></div>
@@ -262,7 +262,7 @@
   </div>
 
   <h2 data-t="weather">Pogoda</h2>
-  <div class="weather-grid">
+  <div class="weather-grid" data-sec="pogoda">
     <div class="card" id="w-akl">
       <div class="w-head"><h3>🇳🇿 Auckland</h3></div>
       <div class="body"><p data-t="loading">Ładowanie…</p></div>
@@ -277,13 +277,13 @@
   </div>
 
   <h2 data-t="paperTitle">Gazeta dnia</h2>
-  <div class="card paper-card">
+  <div class="card paper-card" data-sec="gazeta-skrot">
     <div class="paper-mast"><span class="paper-name">Gazeta Babci</span><span class="paper-src" data-t="paperSrc">wiadomości z wPolityce.pl</span></div>
     <ol class="headlines" id="headlines"><li class="muted" data-t="loading">Ładowanie…</li></ol>
     <a class="paper-btn" href="gazeta.html">📰 <span data-t="paperOpen">Otwórz całą gazetę</span></a>
   </div>
 
-  <div class="card sieci-card">
+  <div class="card sieci-card" data-sec="sieci">
     <div class="sieci-head">
       <span class="sieci-logo">SIECI</span>
       <div>
@@ -299,20 +299,20 @@
 
   <h2 data-t="lwTitle">Radio, telewizja i Msza</h2>
   <div class="lw-grid">
-    <div class="card lw-card">
+    <div class="card lw-card" data-sec="radio">
       <h3>📻 <span data-t="radio">Radio</span></h3>
       <div class="stations" id="stations"></div>
       <audio id="radio-audio" preload="none"></audio>
       <div class="radio-status" id="radio-status" aria-live="polite"></div>
     </div>
-    <div class="card lw-card">
+    <div class="card lw-card" data-sec="tv">
       <h3>📺 <span data-t="tv">Telewizja na żywo</span></h3>
       <a class="lw-btn" href="https://wpolsce24.tv/video" target="_blank" rel="noopener">▶ wPolsce24</a>
       <a class="lw-btn" href="https://polonia.tvp.pl/44562671/tvp-polonia-stream" target="_blank" rel="noopener">▶ TVP Polonia</a>
       <a class="lw-btn" href="https://tv-trwam.pl/na-zywo" target="_blank" rel="noopener">▶ TV Trwam</a>
       <p class="lw-note" data-t="tvNote">Otwiera się w nowej karcie. Przy pierwszym wejściu strona może zapytać o ciasteczka.</p>
     </div>
-    <div class="card lw-card">
+    <div class="card lw-card" data-sec="msza">
       <h3>⛪ <span data-t="mass">Msza na żywo</span></h3>
       <a class="lw-btn gold" href="https://www.youtube.com/@jasnagoraklasztorojcowpaul7943/live" target="_blank" rel="noopener">▶ Jasna Góra — <span data-t="chapel">Kaplica Cudownego Obrazu</span></a>
       <a class="lw-btn gold" href="https://www.youtube.com/channel/UCsHNugP4z9aZC4Tl6n6imzw/live" target="_blank" rel="noopener">▶ Łagiewniki — <span data-t="mercy">Sanktuarium Bożego Miłosierdzia</span></a>
@@ -321,24 +321,28 @@
   </div>
 
   <h2 data-t="shelfTitle">Na dziś: do czytania i oglądania</h2>
+  <div data-sec="polka">
   <div class="shelf-nav" id="shelf-nav"></div>
   <div class="shelf" id="shelf"></div>
+  </div>
   <div class="more" data-t="shelfSource">Książki za darmo z Wolnych Lektur, filmy za darmo z YouTube i 35mm.online — 10 nowych propozycji codziennie.</div>
 
   <h2 data-t="comedyTitle">Na wesoło 😄</h2>
+  <div data-sec="komedia">
   <div class="shelf-nav" id="comedy-nav"></div>
   <div class="shelf" id="comedy"></div>
+  </div>
   <div class="more" data-t="comedySource">Skecze z oficjalnych kanałów kabaretów na YouTube i klasyczne komedie z 35mm.online.</div>
 
   <h2 data-t="polishEvents">Polskie wydarzenia w Auckland</h2>
-  <div class="events" id="ev-pl"></div>
+  <div class="events" id="ev-pl" data-sec="wydarzenia-pl"></div>
   <div class="more"><span data-t="moreAt">Więcej:</span>
     <a href="https://poloniaauckland.co.nz/" target="_blank" rel="noopener">Auckland Polish Association (Dom Polski)</a> ·
     <a href="https://polishheritage.co.nz/" target="_blank" rel="noopener">Polish Museum, Howick</a>
   </div>
 
   <h2 data-t="aklEvents">Inne wydarzenia w Auckland</h2>
-  <div class="events" id="ev-akl"></div>
+  <div class="events" id="ev-akl" data-sec="wydarzenia-akl"></div>
   <div class="more"><span data-t="moreAt">Więcej:</span>
     <a href="https://ourauckland.aucklandcouncil.govt.nz/events/" target="_blank" rel="noopener">OurAuckland</a> ·
     <a href="https://www.aucklandnz.com/events" target="_blank" rel="noopener">aucklandnz.com</a>
@@ -347,6 +351,7 @@
   <footer><span data-t="footer">Pogoda: Open-Meteo / MET Norway · Wydarzenia sprawdzone</span> 13.11.2026</footer>
 </div>
 
+<script src="track.js"></script>
 <script src="library.js"></script>
 <script src="imieniny.js"></script>
 <script>
@@ -908,7 +913,12 @@ const STATIONS = [
   { n: "Polskie Radio 24", u: "https://stream15.polskieradio.pl/pr24/pr24.sdp/playlist.m3u8", page: "https://polskieradio24.pl/" },
   { n: "Polskie Radio Trójka", u: "https://stream13.polskieradio.pl/pr3/pr3.sdp/playlist.m3u8", page: "https://trojka.polskieradio.pl/" },
 ];
-let radioNow = -1, hls = null;
+let radioNow = -1, hls = null, radioSince = 0;
+function logRadio() { // listening time for the usage stats
+  if (radioNow >= 0 && radioSince && window.track) { const s = (Date.now() - radioSince) / 1000; if (s >= 5) track("radio", { label: STATIONS[radioNow].n, v: s }); }
+  radioSince = radioNow >= 0 ? Date.now() : 0;
+}
+window.onTrackFlush = logRadio;
 const loadHlsJs = () => window.Hls ? Promise.resolve() : new Promise((ok, bad) => {
   const sc = document.createElement("script");
   sc.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"; sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc);
@@ -919,6 +929,7 @@ function renderStations() {
 }
 async function playStation(i) {
   const a = document.getElementById("radio-audio"), status = document.getElementById("radio-status"), L = T[lang];
+  logRadio();
   if (hls) { hls.destroy(); hls = null; }
   a.pause();
   if (i === radioNow) { radioNow = -1; status.textContent = ""; a.removeAttribute("src"); renderStations(); return; }
@@ -938,6 +949,7 @@ async function playStation(i) {
     a.onerror = fail;
     await a.play();
     status.textContent = L.playing(st.n);
+    radioSince = Date.now();
   } catch (e) { fail(); }
 }
 document.getElementById("stations").onclick = (e) => { const b = e.target.closest("[data-st]"); if (b) playStation(+b.dataset.st); };

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Babcia Usage</title>
+<style>
+  :root { --bg: #fbf7f0; --card: #fff; --ink: #2a2522; --muted: #6b625b; --faint: #a39a92; --line: #e8dfd3; --bar: #1f5f8b; --bar-hover: #164766; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.45; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-family: Georgia, serif; font-size: 1.8rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin-bottom: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; }
+  .controls input, .controls select, .controls button { font: inherit; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+  .controls button { cursor: pointer; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .tile { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+  .tile .k { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .tile .v { font-size: 1.9rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tile .h { font-size: .8rem; color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+  @media (max-width: 820px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  .card h2 { font-size: 1rem; margin: 0 0 2px; }
+  .card .note { color: var(--muted); font-size: .8rem; margin: 0 0 12px; }
+  /* vertical bars */
+  .vbars { position: relative; display: flex; align-items: flex-end; gap: 2px; height: 160px; border-bottom: 1px solid var(--faint); padding-top: 8px; }
+  .vbars .b { flex: 1; min-width: 3px; height: 100%; display: flex; align-items: flex-end; cursor: default; }
+  .vbars .b i { display: block; width: 100%; background: var(--bar); border-radius: 4px 4px 0 0; min-height: 0; }
+  .vbars .b:hover i { background: var(--bar-hover); }
+  .vbars .gl { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--line); font-size: .7rem; color: var(--faint); pointer-events: none; }
+  .axis { display: flex; justify-content: space-between; font-size: .7rem; color: var(--muted); margin-top: 4px; }
+  /* horizontal bars */
+  .hbar { display: grid; grid-template-columns: minmax(90px, 34%) minmax(0, 1fr) 48px; gap: 10px; align-items: center; padding: 4px 0; font-size: .85rem; }
+  .hbar .track { height: 14px; }
+  .hbar .track i { display: block; height: 100%; background: var(--bar); border-radius: 0 4px 4px 0; }
+  .hbar .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .hbar .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  details summary { cursor: pointer; color: var(--muted); font-size: .8rem; margin-top: 8px; }
+  .tip { position: fixed; pointer-events: none; background: var(--ink); color: #fff; font-size: .78rem; padding: 6px 9px; border-radius: 8px; transform: translate(-50%, -110%); white-space: nowrap; display: none; z-index: 10; }
+  .msg { padding: 30px; text-align: center; color: var(--muted); }
+  code { background: #f1ebe2; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Babcia's page: usage</h1>
+  <div class="sub">How the homepage is used, so it can keep getting better. Private: data lives only in this site's Netlify storage.</div>
+  <div class="controls">
+    <input id="key" type="password" placeholder="Stats key" autocomplete="current-password" aria-label="Stats key">
+    <select id="dev" aria-label="Device"><option value="all">All devices</option></select>
+    <select id="days" aria-label="Period">
+      <option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option>
+    </select>
+    <button id="go" type="button">Show</button>
+  </div>
+  <div id="out"><div class="msg">Enter the stats key and press Show.</div></div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s = "") => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ls = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
+$("#key").value = ls("babcia-stats-key") || "";
+let devPicked = ls("babcia-stats-dev") || "";
+
+const tip = $("#tip");
+document.addEventListener("mousemove", (e) => {
+  const t = e.target.closest("[data-tip]");
+  if (!t) { tip.style.display = "none"; return; }
+  tip.textContent = t.dataset.tip; tip.style.display = "block"; tip.style.left = e.clientX + "px"; tip.style.top = e.clientY + "px";
+});
+
+const SECTION_NAMES = {
+  naglowek: "Header (clocks, A−/A+, language)", dzis: "Today: name days, liturgy, family", pogoda: "Weather",
+  "gazeta-skrot": "Newspaper headlines (homepage)", sieci: "Sieci weekly", radio: "Radio", tv: "Live TV", msza: "Live Mass",
+  polka: "Reading & watching shelf", komedia: "Comedy", "wydarzenia-pl": "Polish events", "wydarzenia-akl": "Auckland events",
+  "gazeta-dzialy": "Newspaper: section menu", "gazeta-pierwsza-strona": "Newspaper: front page", inne: "Other"
+};
+const secName = (s) => SECTION_NAMES[s] || (s?.startsWith("gazeta-") ? "Newspaper: " + s.slice(7) : s);
+
+function vbars(values, labels, fmt) {
+  const max = Math.max(1, ...values);
+  const step = max <= 5 ? 1 : max <= 20 ? 5 : max <= 60 ? 15 : Math.ceil(max / 4 / 10) * 10;
+  const lines = [];
+  for (let g = step; g <= max; g += step) lines.push(`<div class="gl" style="bottom:${(g / max) * 100}%">${g}</div>`);
+  return `<div class="vbars">${lines.join("")}${values.map((v, i) =>
+    `<div class="b" data-tip="${esc(labels[i])}: ${esc(fmt(v))}"><i style="height:${(v / max) * 100}%"></i></div>`).join("")}</div>`;
+}
+function hbars(rows, unit) {
+  const max = Math.max(1, ...rows.map(r => r.v));
+  return rows.map(r => `<div class="hbar" data-tip="${esc(r.label)}: ${r.v} ${unit}">
+    <span class="lbl">${esc(r.label)}</span><span class="track"><i style="width:${(r.v / max) * 100}%"></i></span><span class="n">${r.v}</span></div>`).join("")
+    || `<div class="note">Nothing yet.</div>`;
+}
+const fmtDate = (iso) => iso ? new Intl.DateTimeFormat("en-NZ", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Pacific/Auckland" }).format(new Date(iso)) : "—";
+
+async function load() {
+  const key = $("#key").value.trim(); ls("babcia-stats-key", key);
+  const days = +$("#days").value;
+  const dev = $("#dev").value === "all" && devPicked ? devPicked : $("#dev").value;
+  $("#out").innerHTML = `<div class="msg">Loading…</div>`;
+  let d;
+  try {
+    const r = await fetch(`/api/stats?days=${days}&dev=${encodeURIComponent(dev)}`, { headers: { "x-stats-key": key } });
+    d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.status);
+  } catch (e) { $("#out").innerHTML = `<div class="msg">Couldn't load: ${esc(e.message)}</div>`; return; }
+
+  // device picker (default to the device labelled "babcia" if there is one)
+  const sel = $("#dev");
+  sel.innerHTML = `<option value="all">All devices</option>` + d.devices.map(x =>
+    `<option value="${esc(x.label || x.id)}">${esc(x.label || "unlabelled " + x.id.slice(0, 6))}${x.city ? " · " + esc(x.city) : ""}</option>`).join("");
+  if (!devPicked && d.devices.some(x => x.label === "babcia")) { devPicked = "babcia"; ls("babcia-stats-dev", devPicked); return load(); }
+  sel.value = d.range.dev; devPicked = "";
+
+  // fill every day in range so gaps show as zero
+  const byDay = Object.fromEntries(d.perDay.map(p => [p.day, p]));
+  const dayList = [];
+  for (let i = days - 1; i >= 0; i--) dayList.push(new Intl.DateTimeFormat("en-CA", { timeZone: "Pacific/Auckland" }).format(new Date(Date.now() - i * 86400000)));
+  const mins = dayList.map(k => byDay[k]?.activeMin || 0);
+  const dayLabels = dayList.map(k => new Date(k + "T12:00:00").toLocaleDateString("en-NZ", { weekday: "short", day: "numeric", month: "short" }));
+  const appOpens = d.devices.filter(x => d.range.dev === "all" || x.label === d.range.dev || x.id === d.range.dev).reduce((a, x) => [a[0] + x.app, a[1] + x.browser], [0, 0]);
+
+  $("#out").innerHTML = `
+    <div class="tiles">
+      <div class="tile"><div class="k">Days used</div><div class="v">${d.totals.daysUsed}</div><div class="h">of the last ${days}</div></div>
+      <div class="tile"><div class="k">Visits</div><div class="v">${d.totals.sessions}</div><div class="h">page opens / returns</div></div>
+      <div class="tile"><div class="k">Time on page</div><div class="v">${d.totals.activeMin}<span style="font-size:1rem"> min</span></div><div class="h">screen visible</div></div>
+      <div class="tile"><div class="k">Last visit</div><div class="v" style="font-size:1.1rem;padding-top:10px">${fmtDate(d.totals.lastVisit)}</div><div class="h">Auckland time</div></div>
+      <div class="tile"><div class="k">Opened from</div><div class="v" style="font-size:1.1rem;padding-top:10px">📱 ${appOpens[0]} app · 🌐 ${appOpens[1]} browser</div><div class="h">home-screen icon vs Safari</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Minutes on the page per day</h2>
+      <p class="note">Time the page was on screen. Hover a bar for the day.</p>
+      ${vbars(mins, dayLabels, v => v + " min")}
+      <div class="axis"><span>${dayLabels[0]}</span><span>${dayLabels[dayLabels.length - 1]}</span></div>
+      <details><summary>Table</summary><table><tr><th>Day</th><th class="num">Minutes</th><th class="num">Visits</th></tr>
+        ${dayList.map((k, i) => `<tr><td>${dayLabels[i]}</td><td class="num">${mins[i]}</td><td class="num">${byDay[k]?.sessions || 0}</td></tr>`).reverse().join("")}</table></details>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>When she opens it</h2>
+        <p class="note">Page opens by hour of day (Auckland).</p>
+        ${vbars(d.hours, d.hours.map((_, h) => `${String(h).padStart(2, "0")}:00`), v => v + " opens")}
+        <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+      </div>
+      <div class="card">
+        <h2>Sections she scrolls to</h2>
+        <p class="note">Visits in which the section came on screen.</p>
+        ${hbars(d.sectionsSeen.map(s => ({ label: secName(s.sec), v: s.sessions })), "visits")}
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>Radio listening</h2>
+        <p class="note">Minutes per station.</p>
+        ${hbars(d.radioMin.map(r => ({ label: r.station, v: r.min })), "min")}
+      </div>
+      <div class="card">
+        <h2>Pages</h2>
+        <p class="note">Opens per page.</p>
+        ${hbars(Object.entries(d.pages).map(([p, n]) => ({ label: p === "home" ? "Homepage" : p === "gazeta" ? "Newspaper (Gazeta Babci)" : p, v: n })), "opens")}
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>What she taps</h2>
+      <p class="note">Buttons and links, most used first.</p>
+      <table><tr><th>Section</th><th>Tapped</th><th class="num">Times</th></tr>
+        ${d.topClicks.map(c => `<tr><td>${esc(secName(c.sec))}</td><td>${esc(c.label)}</td><td class="num">${c.n}</td></tr>`).join("") || `<tr><td colspan="3">Nothing yet.</td></tr>`}
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Devices</h2>
+      <p class="note">To name a device, open the site on it once with <code>?device=babcia</code> at the end of the address. To stop counting your own visits, open it with <code>?notrack=1</code>.</p>
+      <table><tr><th>Device</th><th>Where</th><th>First seen</th><th>Last seen</th><th class="num">Visits</th></tr>
+        ${d.devices.map(x => `<tr><td>${esc(x.label || "unlabelled")}<br><span style="color:var(--faint)">${esc(x.id.slice(0, 8))}</span></td><td>${esc(x.city)}</td><td>${fmtDate(x.first)}</td><td>${fmtDate(x.last)}</td><td class="num">${x.sessions}</td></tr>`).join("") || `<tr><td colspan="5">No visits yet.</td></tr>`}
+      </table>
+    </div>`;
+}
+$("#go").onclick = load;
+$("#dev").onchange = () => { devPicked = ""; ls("babcia-stats-dev", $("#dev").value); load(); };
+$("#days").onchange = load;
+if ($("#key").value) load();
+</script>
+</body>
+</html>
