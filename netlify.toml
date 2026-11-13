@@ -5,6 +5,13 @@
   for = "/*"
   [headers.values]
     Cache-Control = "public, max-age=300"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "DENY"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    # Inline scripts/styles are part of the pages, so 'unsafe-inline' stays; the rest limits where
+    # scripts may come from and where the page may send data.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https://api.open-meteo.com https://api.met.no https://feed.evangelizo.org https://stream11.polskieradio.pl https://stream13.polskieradio.pl https://stream15.polskieradio.pl; worker-src 'self' blob:; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
 
 [[headers]]
   for = "/manifest.webmanifest"

@@ -10,7 +10,7 @@ export default async (req) => {
   const want = Netlify.env.get("STATS_KEY");
   if (!want) return Response.json({ error: "STATS_KEY not set on the site" }, { status: 503 });
   const url = new URL(req.url);
-  const key = req.headers.get("x-stats-key") || url.searchParams.get("key");
+  const key = req.headers.get("x-stats-key"); // header only — never in URLs, which end up in logs and history
   if (key !== want) return Response.json({ error: "wrong key" }, { status: 401 });
 
   const store0 = getStore("usage");

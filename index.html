@@ -427,6 +427,9 @@ const CITIES = [
   ["Białystok", 53.13, 23.16], ["Rzeszów", 50.04, 22.00], ["Zakopane", 49.30, 19.95]
 ];
 
+// Escape text before putting it into HTML (feeds, user-typed names)
+const escHtml = (t = "") => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
 // ---------- TEXT ----------
 const T = {
   pl: {
@@ -886,13 +889,13 @@ function renderToday() {
   for (const p of getFamily()) {
     for (const [key, today0, soon] of [[p.bd, L.bdToday, L.bdSoon], [p.nd, L.ndToday, L.ndSoon]]) {
       const d = daysUntil(key, today);
-      if (d === 0) alerts.push([0, `<div class="fam-alert">${today0(p.n)}</div>`]);
-      else if (d !== null && d <= 14) alerts.push([d, `<div class="fam-alert soon">${soon(p.n, d)}</div>`]);
+      if (d === 0) alerts.push([0, `<div class="fam-alert">${today0(escHtml(p.n))}</div>`]);
+      else if (d !== null && d <= 14) alerts.push([d, `<div class="fam-alert soon">${soon(escHtml(p.n), d)}</div>`]);
     }
   }
   document.getElementById("family-row").innerHTML = alerts.sort((a, b) => a[0] - b[0]).map(a => a[1]).join("");
   document.getElementById("fam-list").innerHTML = getFamily().map((p, i) =>
-    `<div class="fam-item"><span>${p.n.replace(/[<>&]/g, "")} · 🎂 ${showDM(p.bd)} · 🌷 ${showDM(p.nd)}</span><button type="button" data-del="${i}">${L.famDel}</button></div>`).join("");
+    `<div class="fam-item"><span>${escHtml(p.n)} · 🎂 ${showDM(p.bd)} · 🌷 ${showDM(p.nd)}</span><button type="button" data-del="${i}">${L.famDel}</button></div>`).join("");
 }
 document.getElementById("fam-form").onsubmit = (e) => {
   e.preventDefault();
@@ -921,7 +924,9 @@ function logRadio() { // listening time for the usage stats
 window.onTrackFlush = logRadio;
 const loadHlsJs = () => window.Hls ? Promise.resolve() : new Promise((ok, bad) => {
   const sc = document.createElement("script");
-  sc.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"; sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc);
+  sc.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js";
+  sc.integrity = "sha384-w6Gb3fXHb5e1LUYa/hYA5Q41bEDglN5ZPCG7Jvnoo8/X90oGnlPqBlBJCe38mEMm"; sc.crossOrigin = "anonymous"; // refuse a tampered copy
+  sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc);
 });
 function renderStations() {
   document.getElementById("stations").innerHTML = STATIONS.map((st, i) =>
@@ -994,16 +999,17 @@ async function loadLiturgy() {
     if (!liturgyCache || liturgyCache.ymd !== ymd) {
       const get = (q) => fetch(`https://feed.evangelizo.org/v2/reader.php?date=${ymd}&lang=PL&${q}`).then(r => r.ok ? r.text() : "");
       const [title, gospel, saint] = await Promise.all([get("type=liturgic_t"), get("type=reading_lt&content=GSP"), get("type=saint")]);
-      const txt = (h) => { const e = document.createElement("div"); e.innerHTML = h; return e.textContent.replace(/\s+/g, " ").trim(); };
-      const firstSaint = (() => { const e = document.createElement("div"); e.innerHTML = saint; return (e.querySelector("a")?.textContent || txt(saint).split(/\s{2,}|\n/)[0] || "").trim(); })();
+      const parse = (h) => new DOMParser().parseFromString(h, "text/html").body; // inert: nothing in it loads or runs
+      const txt = (h) => parse(h).textContent.replace(/\s+/g, " ").trim();
+      const firstSaint = (parse(saint).querySelector("a")?.textContent || txt(saint).split(/\s{2,}|\n/)[0] || "").trim();
       liturgyCache = { ymd, title: txt(title), gospel: txt(gospel).replace(/\.$/, ""), saint: firstSaint.replace(/^Śwśw\.\s*/, "Święci ") };
     }
     const c = liturgyCache;
     if (!c.gospel && !c.title) return;
     row.hidden = false;
-    row.innerHTML = `<span class="lbl">✝️ ${L.liturgy}</span>${c.title ? `<i>${c.title}</i><br>` : ""}
-      ${c.gospel ? `${L.gospel}: <b>${c.gospel.replace(/^Ewangelia /, "")}</b> <a href="https://ewangelia.org/PL/gospel/${iso}" target="_blank" rel="noopener">${L.readMore}</a>` : ""}
-      ${c.saint ? `<br>${L.saints}: ${c.saint} <a href="https://ewangelia.org/PL/saints/${iso}" target="_blank" rel="noopener">${L.readMore}</a>` : ""}
+    row.innerHTML = `<span class="lbl">✝️ ${L.liturgy}</span>${c.title ? `<i>${escHtml(c.title)}</i><br>` : ""}
+      ${c.gospel ? `${L.gospel}: <b>${escHtml(c.gospel.replace(/^Ewangelia /, ""))}</b> <a href="https://ewangelia.org/PL/gospel/${iso}" target="_blank" rel="noopener">${L.readMore}</a>` : ""}
+      ${c.saint ? `<br>${L.saints}: ${escHtml(c.saint)} <a href="https://ewangelia.org/PL/saints/${iso}" target="_blank" rel="noopener">${L.readMore}</a>` : ""}
       <span class="lbl" style="text-transform:none;font-weight:400;margin-top:4px">${L.src}</span>`;
   } catch (e) { /* leave hidden */ }
 }

@@ -41,7 +41,7 @@ export function parseRss(xml) {
       lead: decode(tag(it, "description")),
       link,
       date: new Date(decode(tag(it, "pubDate"))).toISOString(),
-      img: (it.match(/<enclosure[^>]*url="([^"]+)"[^>]*type="image/) || [])[1] || null,
+      img: ((it.match(/<enclosure[^>]*url="([^"]+)"[^>]*type="image/) || [])[1] || "").match(/^https:\/\/[^\s"<>]+$/)?.[0] || null, // https images only
       premium: /\/premium\//.test(link),
     };
   }).filter(i => i.title && /^https:\/\/wpolityce\.pl\//.test(i.link));

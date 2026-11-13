@@ -9,6 +9,11 @@ const clip = (v, n = 120) => (typeof v === "string" ? v.slice(0, n) : v);
 
 export default async (req, context) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  // Only accept beacons sent by this site's own pages (browsers always send Origin on cross-site POSTs)
+  const origin = req.headers.get("origin");
+  let sameSite = true;
+  try { sameSite = !origin || new URL(origin).host === new URL(req.url).host; } catch { sameSite = false; }
+  if (!sameSite) return new Response("Forbidden", { status: 403 });
   const raw = await req.text();
   if (raw.length > MAX_BODY) return new Response("Too large", { status: 413 });
   let b;
