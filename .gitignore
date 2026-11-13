@@ -3,3 +3,4 @@
 .DS_Store
 gazeta-sample.json
 node_modules/
+deno.lock
