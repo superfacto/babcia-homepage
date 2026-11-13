@@ -13,9 +13,21 @@ export default async (req) => {
   const key = req.headers.get("x-stats-key") || url.searchParams.get("key");
   if (key !== want) return Response.json({ error: "wrong key" }, { status: 401 });
 
+  const store0 = getStore("usage");
+  // Name a device from the dashboard (one key per device, so no read-modify-write)
+  if (req.method === "POST") {
+    let b; try { b = await req.json(); } catch { return Response.json({ error: "bad json" }, { status: 400 }); }
+    const id = String(b.id || "").slice(0, 40), label = String(b.label || "").trim().slice(0, 40);
+    if (!id) return Response.json({ error: "missing id" }, { status: 400 });
+    if (label) await store0.set(`labels/${id}`, label); else await store0.delete(`labels/${id}`);
+    return Response.json({ ok: true });
+  }
+
   const days = Math.min(Math.max(+url.searchParams.get("days") || 30, 1), 120);
   const dev = url.searchParams.get("dev") || "all"; // "all", a label like "babcia", or a device id
-  const store = getStore("usage");
+  const store = store0;
+  const aliasKeys = (await store.list({ prefix: "labels/" })).blobs.map(b => b.key);
+  const aliases = Object.fromEntries(await Promise.all(aliasKeys.map(async k => [k.slice(7), await store.get(k)])));
 
   // List batch keys for the last `days` UTC days (+1 to cover the time-zone shift)
   const keys = [];
@@ -30,6 +42,7 @@ export default async (req) => {
   for (const b of batches) {
     const D = devices[b.d] ||= { id: b.d, label: "", first: b.at, last: b.at, sessions: new Set(), city: "", app: 0, browser: 0 };
     if (b.lbl) D.label = b.lbl;
+    if (aliases[b.d]) D.label = aliases[b.d]; // a name set in the dashboard wins
     if (b.at < D.first) D.first = b.at;
     if (b.at > D.last) D.last = b.at;
     if (b.s) D.sessions.add(b.s);

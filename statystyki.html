@@ -185,12 +185,21 @@ async function load() {
 
     <div class="card">
       <h2>Devices</h2>
-      <p class="note">To name a device, open the site on it once with <code>?device=babcia</code> at the end of the address. To stop counting your own visits, open it with <code>?notrack=1</code>.</p>
-      <table><tr><th>Device</th><th>Where</th><th>First seen</th><th>Last seen</th><th class="num">Visits</th></tr>
-        ${d.devices.map(x => `<tr><td>${esc(x.label || "unlabelled")}<br><span style="color:var(--faint)">${esc(x.id.slice(0, 8))}</span></td><td>${esc(x.city)}</td><td>${fmtDate(x.first)}</td><td>${fmtDate(x.last)}</td><td class="num">${x.sessions}</td></tr>`).join("") || `<tr><td colspan="5">No visits yet.</td></tr>`}
+      <p class="note">Name a device with the box on its row (use <b>babcia</b> for every device that is hers — e.g. her Safari and her home-screen app count separately on iPad). To stop counting your own visits, open the site on your devices once with <code>?notrack=1</code>.</p>
+      <table><tr><th>Device</th><th>Where</th><th>Opened from</th><th>Last seen</th><th class="num">Visits</th><th>Name it</th></tr>
+        ${d.devices.map(x => `<tr><td>${esc(x.label || "unlabelled")}<br><span style="color:var(--faint)">${esc(x.id.slice(0, 8))}</span></td><td>${esc(x.city)}</td><td>${x.app ? "📱 app" : ""} ${x.browser ? "🌐 browser" : ""}</td><td>${fmtDate(x.last)}</td><td class="num">${x.sessions}</td>
+          <td><input class="nm" data-id="${esc(x.id)}" value="${esc(x.label)}" placeholder="e.g. babcia" style="width:110px;font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px"> <button type="button" class="nm-save" data-id="${esc(x.id)}" style="font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;cursor:pointer">Save</button></td></tr>`).join("") || `<tr><td colspan="6">No visits yet.</td></tr>`}
       </table>
     </div>`;
 }
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest(".nm-save"); if (!b) return;
+  const id = b.dataset.id, label = document.querySelector(`.nm[data-id="${CSS.escape(id)}"]`).value.trim();
+  b.textContent = "…";
+  const r = await fetch("/api/stats", { method: "POST", headers: { "x-stats-key": $("#key").value.trim().replace(/%+$/, ""), "content-type": "application/json" }, body: JSON.stringify({ id, label }) });
+  b.textContent = r.ok ? "Saved ✓" : "Failed";
+  if (r.ok) setTimeout(load, 600);
+});
 $("#go").onclick = load;
 $("#dev").onchange = () => { devPicked = ""; ls("babcia-stats-dev", $("#dev").value); load(); };
 $("#days").onchange = load;
