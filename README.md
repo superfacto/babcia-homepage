@@ -9,6 +9,9 @@ A simple, big-text homepage for a Polish grandma in Auckland.
 - **Clocks** — Auckland and Poland time.
 - **Events** — Polish community events in Auckland first, then other Auckland events.
   Past events hide themselves automatically.
+- **Book of the day** — a free Polish classic from [Wolne Lektury](https://wolnelektury.pl), with a short
+  "what it is / why it's worth reading" note. 31 hand-picked books rotate daily (edit `BOOKS` in `index.html`).
+- **Text this to someone** — each event has a button that opens Messages with the details filled in.
 - Polish by default, with an English button.
 
 ## Updating events

@@ -97,6 +97,23 @@
     .share svg { width: 24px; height: 24px; }
   }
   .soon { display: inline-block; background: var(--red); color: #fff; font-size: .65rem; padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 6px; font-family: system-ui, sans-serif; }
+  .book { display: grid; grid-template-columns: 150px minmax(0,1fr); gap: 24px; align-items: start; }
+  .book-cover img { width: 100%; border-radius: 8px; box-shadow: 0 4px 14px rgba(60, 40, 20, .2); display: block; }
+  .book h3 { margin: 0; font-size: 1.5rem; }
+  .book .meta { color: var(--muted); font-size: .9rem; margin: 2px 0 10px; }
+  .book p { margin: 0 0 10px; font-size: .95rem; }
+  .book-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 14px; }
+  .read-btn { display: inline-block; background: var(--red); color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 14px;
+    font-family: system-ui, -apple-system, sans-serif; font-weight: 600; font-size: .9rem; }
+  .read-btn:hover { background: #a90d26; }
+  .audio-note { color: var(--muted); font-size: .85rem; }
+  @media (max-width: 520px) {
+    .book { display: block; }
+    .book-cover { float: left; width: 88px; margin: 0 14px 8px 0; }
+    .book h3 { font-size: 1.2rem; }
+    .book-actions { clear: both; }
+    .read-btn { display: block; text-align: center; width: 100%; }
+  }
   .more { margin-top: 10px; font-size: .9rem; color: var(--muted); }
   .more a { color: inherit; }
   footer { margin-top: 50px; font-size: .75rem; color: var(--muted); text-align: center; }
@@ -131,6 +148,10 @@
       <div class="body"><p data-t="loading">Ładowanie…</p></div>
     </div>
   </div>
+
+  <h2 data-t="bookTitle">Książka dnia</h2>
+  <div class="card book" id="book"></div>
+  <div class="more" data-t="bookSource">Darmowe e-booki z Wolnych Lektur — nowa książka codziennie.</div>
 
   <h2 data-t="polishEvents">Polskie wydarzenia w Auckland</h2>
   <div class="events" id="ev-pl"></div>
@@ -230,7 +251,10 @@ const T = {
     polishEvents: "Polskie wydarzenia w Auckland", aklEvents: "Inne wydarzenia w Auckland",
     moreAt: "Więcej:", footer: "Pogoda: Open-Meteo / MET Norway · Wydarzenia sprawdzone",
     feels: "odczuwalna", wind: "wiatr", now: "Teraz", details: "Szczegóły",
-    noEvents: "Na razie brak — sprawdź linki poniżej.", today: "dziś", tomorrow: "jutro", onNow: "trwa teraz", share: "Wyślij to komuś SMS‑em", details2: "Więcej",
+    noEvents: "Na razie brak — sprawdź linki poniżej.", today: "dziś", tomorrow: "jutro", onNow: "trwa teraz", share: "Wyślij to komuś SMS‑em",
+    bookTitle: "Książka dnia", bookWhat: "O czym:", bookWhy: "Dlaczego warto:", read: "Czytaj za darmo",
+    audio: "Jest też audiobook", readTime: (m) => `ok. ${m} min czytania`,
+    bookSource: "Darmowe e-booki z Wolnych Lektur — nowa książka codziennie.", details2: "Więcej",
     until: "do", weatherErr: "Nie udało się pobrać pogody. Spróbuj odświeżyć stronę.", lang: "English"
   },
   en: {
@@ -239,7 +263,10 @@ const T = {
     polishEvents: "Polish events in Auckland", aklEvents: "Other Auckland events",
     moreAt: "More:", footer: "Weather: Open-Meteo / MET Norway · Events checked",
     feels: "feels like", wind: "wind", now: "Now", details: "Details",
-    noEvents: "Nothing right now — see the links below.", today: "today", tomorrow: "tomorrow", onNow: "on now", share: "Text this to someone", details2: "More",
+    noEvents: "Nothing right now — see the links below.", today: "today", tomorrow: "tomorrow", onNow: "on now", share: "Text this to someone",
+    bookTitle: "Book of the day", bookWhat: "What it is:", bookWhy: "Why it's worth reading:", read: "Read it free",
+    audio: "Also available as an audiobook", readTime: (m) => `about ${m} min read`,
+    bookSource: "Free Polish e-books from Wolne Lektury — a new one every day.", details2: "More",
     until: "until", weatherErr: "Couldn't load the weather. Try refreshing the page.", lang: "Polski"
   }
 };
@@ -493,9 +520,197 @@ function renderEvents(list, elId, cls) {
   }).join("");
 }
 
+// ---------- BOOK OF THE DAY (free on Wolne Lektury) ----------
+// One book per day, in this order, looping. slug = wolnelektury.pl/katalog/lektura/<slug>/
+const BOOKS = [
+  { slug: "latarnik", t: "Latarnik", a: "Henryk Sienkiewicz", y: 1881, audio: true, mins: 30, thumb: "latarnik_Ez24g6N.jpg",
+    pl: ["Stary polski tułacz Skawiński po latach wędrówek dostaje posadę latarnika w dalekim Aspinwall w Panamie. Pewnego dnia przychodzi do niego paczka polskich książek…",
+         "To opowieść o emigrancie i tęsknocie za Polską — bliska każdemu, kto mieszka daleko od domu. Krótka, na jeden wieczór."],
+    en: ["An old Polish exile, Skawiński, finally finds peace as a lighthouse keeper in faraway Panama — until a parcel of Polish books arrives.",
+         "A story about emigration and homesickness that anyone living far from Poland will feel. Short enough for one evening."] },
+  { slug: "pan-tadeusz", t: "Pan Tadeusz", a: "Adam Mickiewicz", y: 1834, audio: true, thumb: "pan-tadeusz_uDIGygA.jpg",
+    pl: ["Epopeja narodowa: szlachecki dwór na Litwie w latach 1811–1812, spór Sopliców z Horeszkami, grzybobranie, polowanie i koncert Jankiela.",
+         "Mickiewicz napisał ją na emigracji w Paryżu, z tęsknoty za krajem lat dziecinnych. Zaczyna się od słynnego „Litwo! Ojczyzno moja!”. Andrzej Wajda sfilmował ją w 1999 roku."],
+    en: ["Poland's national epic: life in a country manor in Lithuania in 1811–12, a family feud, mushroom picking, a hunt and Jankiel's famous concert.",
+         "Mickiewicz wrote it in exile in Paris, out of longing for home. Andrzej Wajda made it into a film in 1999."] },
+  { slug: "katarynka", t: "Katarynka", a: "Bolesław Prus", y: 1880, audio: true, mins: 25, thumb: "katarynka_VGXbgcs.jpg",
+    pl: ["Pan Tomasz, szanowany warszawski adwokat, nie znosi katarynek. Aż odkrywa, że w kamienicy naprzeciwko mieszka mała niewidoma dziewczynka.",
+         "Wzruszająca nowela o tym, że jeden dobry gest może zmienić czyjś świat. Czyta się ją w kwadrans."],
+    en: ["Mr Tomasz, a respected Warsaw lawyer, can't stand barrel organs — until he notices a little blind girl living across the street.",
+         "A touching short story about how one kind gesture can change someone's world. A fifteen-minute read."] },
+  { slug: "chlopi", t: "Chłopi", a: "Władysław Reymont", y: 1904, audio: true, thumb: "chlopi_EtQid4o.jpg",
+    pl: ["Rok z życia wsi Lipce, opowiedziany przez cztery pory roku: stary gospodarz Boryna, piękna Jagna, zazdrość, ziemia i święta.",
+         "Za tę powieść Reymont dostał Nagrodę Nobla w 1924 roku. W 2023 roku powstał z niej film, w którym każdą klatkę namalowano ręcznie."],
+    en: ["A year in the village of Lipce, told through the four seasons: old farmer Boryna, beautiful Jagna, jealousy, land and holidays.",
+         "Reymont won the Nobel Prize for it in 1924. In 2023 it became a film in which every frame was hand-painted."] },
+  { slug: "zemsta", t: "Zemsta", a: "Aleksander Fredro", y: 1834, audio: true, thumb: "zemsta_a2ylTDf.jpg",
+    pl: ["Dwaj sąsiedzi — porywczy Cześnik i chytry Rejent — dzielą jeden zamek i kłócą się o mur. A ich dzieci… zakochują się w sobie.",
+         "Najzabawniejsza polska komedia, pisana wierszem. Wiele powiedzeń z niej weszło do języka, np. „Niech się dzieje wola nieba”. Wajda nakręcił ją w 2002 roku."],
+    en: ["Two neighbours — the hot-headed Cześnik and the sly Rejent — share one castle and feud over a wall, while their children fall in love.",
+         "Poland's best-loved comedy, written in verse. Many of its lines became everyday sayings. Wajda filmed it in 2002."] },
+  { slug: "o-krasnoludkach-i-sierotce-marysi", t: "O krasnoludkach i sierotce Marysi", a: "Maria Konopnicka", y: 1896, audio: true, thumb: "o-krasnoludkach-i-sierotce-marysi_q84QZs2.jpg",
+    pl: ["Baśń o krasnoludkach, które przez zimę mieszkają w polskiej wsi, i o biednej sierotce Marysi, która pasie gęsi.",
+         "Pełna polskiej przyrody — pól, lasów i pór roku. Idealna do czytania na głos wnukom."],
+    en: ["A fairy tale about little gnomes spending a winter in a Polish village, and Marysia, a poor orphan girl who looks after geese.",
+         "Full of the Polish countryside — fields, forests and seasons. Perfect for reading aloud to grandchildren."] },
+  { slug: "lalka", t: "Lalka", a: "Bolesław Prus", y: 1890, audio: true, thumb: "lalka_nCyTxKb.jpg",
+    pl: ["Kupiec Stanisław Wokulski dorabia się majątku, bo zakochał się w zimnej arystokratce Izabeli Łęckiej.",
+         "Najlepszy portret dawnej Warszawy — jej ulic, sklepów i ludzi. Wielu czytelników najbardziej kocha pamiętnik starego subiekta Rzeckiego."],
+    en: ["Merchant Stanisław Wokulski makes a fortune because he has fallen for a cold aristocrat, Izabela Łęcka.",
+         "The finest portrait of old Warsaw — its streets, shops and people. Many readers love old clerk Rzecki's diary most of all."] },
+  { slug: "tuwim-lokomotywa", t: "Lokomotywa", a: "Julian Tuwim", y: 1938, audio: true, mins: 5, thumb: "tuwim-lokomotywa_pDndZAt.jpg",
+    pl: ["„Stoi na stacji lokomotywa, ciężka, ogromna i pot z niej spływa…” — wiersz o wielkim pociągu, który powoli rusza.",
+         "Słychać w nim stukot kół i sapanie pary. Każde polskie dziecko zna go na pamięć — warto przeczytać go wnukom na głos."],
+    en: ["A poem about a huge steam engine standing at the station — and slowly, slowly starting to move.",
+         "You can hear the wheels and the steam in the words. Every Polish child knows it by heart — lovely to read aloud to grandchildren."] },
+  { slug: "quo-vadis", t: "Quo vadis", a: "Henryk Sienkiewicz", y: 1896, audio: true, thumb: "quo-vadis_LmcLW2K.jpg",
+    pl: ["Rzym za cesarza Nerona: miłość rzymskiego patrycjusza Winicjusza do chrześcijanki Ligii, pożar miasta i prześladowania pierwszych chrześcijan.",
+         "Przetłumaczona na dziesiątki języków. W 1905 roku Sienkiewicz dostał Nagrodę Nobla. Niezapomniany jest siłacz Ursus."],
+    en: ["Rome under Emperor Nero: a Roman nobleman's love for Ligia, a Christian girl, the great fire of Rome and the persecution of early Christians.",
+         "Translated into dozens of languages; Sienkiewicz won the Nobel Prize in 1905. Unforgettable strongman Ursus."] },
+  { slug: "kamizelka", t: "Kamizelka", a: "Bolesław Prus", y: 1882, audio: true, mins: 20, thumb: "kamizelka_ms6YOia.jpg",
+    pl: ["Narrator kupuje starą kamizelkę i odkrywa jej sekret: chory mąż i jego żona po kryjomu przesuwali sprzączkę, żeby się nawzajem pocieszać.",
+         "Jedna z najpiękniejszych polskich opowieści o miłości — w kilkunastu minutach."],
+    en: ["The narrator buys an old waistcoat and discovers its secret: a sick husband and his wife secretly moved the buckle to comfort each other.",
+         "One of the most beautiful Polish love stories — in just a few pages."] },
+  { slug: "nad-niemnem", t: "Nad Niemnem", a: "Eliza Orzeszkowa", y: 1888, audio: true, thumb: "nad-niemnem_RW5mroj.jpg",
+    pl: ["Lato nad Niemnem: dwór Korczyńskich i zaścianek Bohatyrowiczów, uboga krewna Justyna i miłość, która łączy dwa światy.",
+         "Pełna pięknych opisów przyrody i pamięci o powstaniu styczniowym — wspólna mogiła powstańców w lesie to jedno z najbardziej poruszających miejsc w polskiej literaturze."],
+    en: ["Summer by the Neman river: a manor house, a village of proud farmers, a poor relative named Justyna and a love that bridges two worlds.",
+         "Famous for its nature writing and its memory of the 1863 uprising."] },
+  { slug: "krzyzacy", t: "Krzyżacy", a: "Henryk Sienkiewicz", y: 1900, audio: true, thumb: "krzyzacy_aRU6mR0.jpg",
+    pl: ["Młody rycerz Zbyszko z Bogdańca, jego miłość do Danusi i walka z Zakonem Krzyżackim — aż do wielkiej bitwy pod Grunwaldem w 1410 roku.",
+         "Przygoda, rycerze i średniowieczna Polska. Aleksander Ford sfilmował ją w 1960 roku — to był jeden z najchętniej oglądanych polskich filmów."],
+    en: ["Young knight Zbyszko, his love for Danusia and the struggle against the Teutonic Knights — all the way to the great Battle of Grunwald in 1410.",
+         "Knights and adventure in medieval Poland; the 1960 film was a huge hit."] },
+  { slug: "treny", t: "Treny", a: "Jan Kochanowski", y: 1580, audio: true, mins: 30, thumb: "treny_5PXJw5H.jpg",
+    pl: ["Dziewiętnaście wierszy, które Kochanowski napisał po śmierci swojej ukochanej córeczki Urszulki.",
+         "Ponad 400 lat, a wciąż poruszają — „Wielkieś mi uczyniła pustki w domu moim, moja droga Orszulo…”. Najczulszy żal ojca w polskiej poezji."],
+    en: ["Nineteen poems Kochanowski wrote after his beloved little daughter Urszula died.",
+         "Over 400 years old and still deeply moving — the tenderest grief in Polish poetry."] },
+  { slug: "w-pustyni-i-w-puszczy", t: "W pustyni i w puszczy", a: "Henryk Sienkiewicz", y: 1911, audio: true, thumb: "w-pustyni-i-w-puszczy_LQU8Xh2.jpg",
+    pl: ["Czternastoletni Staś i ośmioletnia Nel zostają porwani w Egipcie i przemierzają Afrykę — przez pustynię, dżunglę, z wiernym słoniem Kingiem.",
+         "Jedyna powieść Sienkiewicza dla młodzieży. Wielka przygoda — świetna do wspólnego czytania z wnukami."],
+    en: ["Fourteen-year-old Staś and eight-year-old Nel are kidnapped in Egypt and cross Africa — deserts, jungle and a loyal elephant named King.",
+         "Sienkiewicz's only novel for young readers. A great adventure to share with grandchildren."] },
+  { slug: "wesele", t: "Wesele", a: "Stanisław Wyspiański", y: 1901, audio: true, thumb: "wesele_OJFRlwh.jpg",
+    pl: ["Prawdziwe wesele krakowskiego poety z dziewczyną ze wsi w Bronowicach. W nocy do chaty przychodzą duchy i Chochoł, a gospodarz dostaje złoty róg.",
+         "Dramat o Polsce i Polakach, z którego pochodzi wiele cytatów: „Miałeś, chamie, złoty róg”. Wajda nakręcił go w 1972 roku."],
+    en: ["A real wedding of a Kraków poet and a village girl. At night ghosts and a straw figure, the Chochoł, visit the cottage.",
+         "A play about Poland itself, full of lines Poles still quote. Wajda filmed it in 1972."] },
+  { slug: "mendel-gdanski", t: "Mendel Gdański", a: "Maria Konopnicka", y: 1890, audio: true, mins: 25, thumb: "mendel-gdanski_xw82Xx9.jpg",
+    pl: ["Stary żydowski introligator Mendel całe życie mieszka w Warszawie i czuje się jej częścią. Pewnego dnia ulica zwraca się przeciw niemu i jego wnukowi.",
+         "Krótka, mocna nowela przeciw nienawiści — napisana ponad 130 lat temu, a wciąż aktualna."],
+    en: ["Mendel, an old Jewish bookbinder, has lived in Warsaw all his life and feels it is his home — until a mob turns against him and his grandson.",
+         "A short, powerful story against hatred, written over 130 years ago and still timely."] },
+  { slug: "potop", t: "Potop", a: "Henryk Sienkiewicz", y: 1886, audio: true, thumb: "potop_N5MnJ1m.jpg",
+    pl: ["Szwedzki najazd na Polskę w 1655 roku. Zawadiaka Andrzej Kmicic grzeszy, żałuje i walczy, żeby odzyskać honor i miłość Oleńki.",
+         "Środkowa część Trylogii — z obroną Jasnej Góry. Jerzy Hoffman sfilmował ją w 1974 roku."],
+    en: ["The Swedish invasion of Poland in 1655. Hot-headed Andrzej Kmicic sins, repents and fights to win back his honour and Oleńka's love.",
+         "The middle part of Sienkiewicz's Trilogy, including the defence of Jasna Góra. Filmed in 1974."] },
+  { slug: "fredro-sluby-panienskie", t: "Śluby panieńskie", a: "Aleksander Fredro", y: 1833, audio: true, thumb: "fredro-sluby-panienskie_E6swQgH.jpg",
+    pl: ["Dwie panny, Klara i Aniela, przysięgają, że nigdy nie wyjdą za mąż. Sprytny Gucio ma jednak swój plan…",
+         "Lekka, dowcipna komedia o miłości, pisana wierszem. Idealna na pogodny wieczór."],
+    en: ["Two young ladies vow never to marry. Clever young Gucio has other plans…",
+         "A light, witty comedy about love, written in verse. Perfect for a cheerful evening."] },
+  { slug: "syzyfowe-prace", t: "Syzyfowe prace", a: "Stefan Żeromski", y: 1897, audio: true, thumb: "syzyfowe-prace_sAf5HNk.jpg",
+    pl: ["Marcin Borowicz idzie do szkoły w zaborze rosyjskim, gdzie zakazano mówić po polsku. Powoli zapomina, kim jest — aż do jednej lekcji.",
+         "Słynna scena: kolega recytuje w klasie „Redutę Ordona” Mickiewicza i budzi w chłopcach polskość. O tym, jak język trzyma nas przy korzeniach."],
+    en: ["Marcin goes to school under Russian rule, where speaking Polish is forbidden, and slowly forgets who he is — until one lesson.",
+         "A classmate recites a Mickiewicz poem and wakes up the boys' Polishness. A book about how language keeps us connected to our roots."] },
+  { slug: "stara-basn", t: "Stara baśń", a: "Józef Ignacy Kraszewski", y: 1876, audio: true, thumb: "stara-basn_JK8OaQv.jpg",
+    pl: ["Polska przed chrztem: okrutny książę Popiel, wiece, pogańskie obrzędy i początki dynastii Piastów.",
+         "Legenda o Popielu, którego zjadły myszy, opowiedziana jak wielka powieść. Kraszewski napisał w życiu ponad 200 powieści!"],
+    en: ["Poland before Christianity: the cruel Prince Popiel, tribal gatherings, pagan rites and the beginning of the Piast dynasty.",
+         "The legend of Popiel (eaten by mice!) told as an epic novel. Kraszewski wrote over 200 novels."] },
+  { slug: "moralnosc-pani-dulskiej", t: "Moralność pani Dulskiej", a: "Gabriela Zapolska", y: 1906, audio: true, thumb: "moralnosc-pani-dulskiej_kwRuFUU.jpg",
+    pl: ["Pani Dulska, właścicielka kamienicy, dba tylko o to, co powiedzą sąsiedzi — a w jej domu dzieje się skandal.",
+         "Komedia tak celna, że od nazwiska bohaterki powstało słowo „dulszczyzna” — czyli mieszczańska hipokryzja."],
+    en: ["Mrs Dulska, a landlady, cares only about what the neighbours will say — while a scandal unfolds in her own home.",
+         "So sharp that her name became a Polish word for small-minded hypocrisy: „dulszczyzna”."] },
+  { slug: "krol-macius-pierwszy", t: "Król Maciuś Pierwszy", a: "Janusz Korczak", y: 1923, audio: true, thumb: "krol-macius-pierwszy_03r2IuW.jpg",
+    pl: ["Mały chłopiec zostaje królem i postanawia zmienić świat — także dla dzieci. Ale rządzenie nie jest takie proste.",
+         "Napisał ją Janusz Korczak, lekarz i wychowawca, który w 1942 roku nie opuścił swoich sierot i poszedł z nimi na śmierć do Treblinki."],
+    en: ["A little boy becomes king and sets out to change the world — for children too. But ruling isn't easy.",
+         "By Janusz Korczak, the doctor and teacher who in 1942 refused to abandon his orphans and went with them to Treblinka."] },
+  { slug: "ballady-i-romanse", t: "Ballady i romanse", a: "Adam Mickiewicz", y: 1822, audio: true, thumb: "ballady-i-romanse_qTRyS0x.jpg",
+    pl: ["Ballady o rusałkach, duchach i ludowych wierzeniach: „Świtezianka”, „Lilije”, „Pani Twardowska”, „Romantyczność”.",
+         "Od tej książki zaczął się polski romantyzm. „Miej serce i patrzaj w serce” — to właśnie stąd."],
+    en: ["Ballads of water nymphs, ghosts and folk beliefs, including „Świtezianka” and „Pani Twardowska”.",
+         "This little book launched Polish Romanticism."] },
+  { slug: "ziemia-obiecana", t: "Ziemia obiecana", a: "Władysław Reymont", y: 1899, audio: true, thumb: "ziemia-obiecana_FTQQwYK.jpg",
+    pl: ["Łódź w czasach wielkich fabryk: trzej przyjaciele — Polak, Niemiec i Żyd — chcą razem zbudować własną fabrykę i zrobić majątek.",
+         "Brutalny i fascynujący obraz miasta, które rosło jak na drożdżach. Wajda sfilmował ją w 1974 roku — film był nominowany do Oscara."],
+    en: ["Łódź in its factory boom: three friends — a Pole, a German and a Jew — set out to build their own factory and get rich.",
+         "A gripping portrait of a booming city. Wajda's 1974 film of it was nominated for an Oscar."] },
+  { slug: "galczynski-zaczarowana-dorozka", t: "Zaczarowana dorożka", a: "Konstanty Ildefons Gałczyński", y: 1948, audio: true, mins: 5, thumb: "galczynski-zaczarowana-dorozka_08r6xip.jpg",
+    pl: ["Krótki, magiczny wiersz o nocnym Krakowie, dorożce, koniu i dorożkarzu, którzy wyglądają jak ze snu.",
+         "Gałczyński pisał z ogromną czułością i humorem. Pięć minut czytania — i ma się ochotę wrócić do Krakowa."],
+    en: ["A short, magical poem about Kraków at night — a horse-drawn cab, a horse and a cabman who seem to come from a dream.",
+         "Tender and playful. Five minutes of reading that will make you miss Kraków."] },
+  { slug: "przedwiosnie", t: "Przedwiośnie", a: "Stefan Żeromski", y: 1924, audio: true, thumb: "przedwiosnie_dlIV5w4.jpg",
+    pl: ["Młody Cezary Baryka po rewolucji w Baku wraca z ojcem do Polski, którą zna tylko z opowieści o „szklanych domach”.",
+         "Książka o zderzeniu marzeń z rzeczywistością w odrodzonej Polsce — mówiono o niej w całym kraju."],
+    en: ["After the revolution in Baku, young Cezary returns to a Poland he knows only from his father's tales of „glass houses”.",
+         "About dreams meeting reality in newly reborn Poland — it was the talk of the country."] },
+  { slug: "bajki-i-przypowiesci", t: "Bajki i przypowieści", a: "Ignacy Krasicki", y: 1779, audio: true, mins: 15, thumb: "bajki-i-przypowiesci_nZPnGON.jpg",
+    pl: ["Krótkie bajki o zwierzętach i ludziach — każda ma kilka linijek i morał.",
+         "Biskup Krasicki był mistrzem dowcipu. Mają prawie 250 lat, a pasują do dzisiejszych ludzi zaskakująco dobrze."],
+    en: ["Short fables about animals and people — each a few lines long, each with a moral.",
+         "Bishop Krasicki was a master of wit; nearly 250 years old and still surprisingly true."] },
+  { slug: "makuszynski-szatan-z-siodmej-klasy", t: "Szatan z siódmej klasy", a: "Kornel Makuszyński", y: 1937, audio: true, thumb: "makuszynski-szatan-z-siodmej-klasy_TYyDt47.jpg",
+    pl: ["Bystry uczeń Adam Cisowski, zwany „szatanem”, jedzie na wakacje do starego dworu i rozwiązuje zagadkę ukrytego skarbu.",
+         "Pogodna, zabawna powieść detektywistyczna — Makuszyński pisał z wielkim ciepłem. Dobra na kilka wieczorów."],
+    en: ["Clever schoolboy Adam, nicknamed „the Devil”, spends the holidays in an old manor house and solves the mystery of a hidden treasure.",
+         "A warm, funny detective story to enjoy over a few evenings."] },
+  { slug: "dziady", t: "Dziady", a: "Adam Mickiewicz", y: 1832, audio: true, thumb: "dziady_30cCvGO.jpg",
+    pl: ["Ludowy obrzęd przywoływania duchów zmarłych, nieszczęśliwa miłość i więzień Konrad, który w Wielkiej Improwizacji kłóci się z Bogiem o los ojczyzny.",
+         "Dramat tak silny, że gdy w 1968 roku władze zdjęły go ze sceny Teatru Narodowego, studenci wyszli na ulice."],
+    en: ["A folk ritual summoning the spirits of the dead, an unhappy love, and the prisoner Konrad arguing with God about Poland's fate.",
+         "So powerful that when the authorities banned a production in 1968, students took to the streets."] },
+  { slug: "sklepy-cynamonowe-sklepy-cynamonowe", t: "Sklepy cynamonowe", a: "Bruno Schulz", y: 1934, audio: true, mins: 20, thumb: "sklepy-cynamonowe-sklepy-cynamonowe_92ptYZR.jpg",
+    pl: ["Wieczorny spacer chłopca przez zaczarowane, zimowe miasteczko w poszukiwaniu tajemniczych sklepów cynamonowych.",
+         "Proza jak sen — Schulz pisał o Drohobyczu swojego dzieciństwa tak, że zwykłe ulice stają się magiczne. To opowiadanie tytułowe z jego słynnego zbioru."],
+    en: ["A boy's evening walk through an enchanted winter town in search of mysterious cinnamon shops.",
+         "Prose like a dream — Schulz turned his small hometown into magic. The title story of his famous collection."] },
+  { slug: "ogniem-i-mieczem", t: "Ogniem i mieczem", a: "Henryk Sienkiewicz", y: 1884, audio: true, thumb: "ogniem-i-mieczem_heur6v8.jpg",
+    pl: ["Powstanie Chmielnickiego na Ukrainie w XVII wieku. Rycerz Jan Skrzetuski i jego ukochana Helena, a obok niezapomniany Zagłoba.",
+         "Pierwsza część Trylogii, pisanej „ku pokrzepieniu serc”. Pan Zagłoba to jedna z najzabawniejszych postaci polskiej literatury."],
+    en: ["The 17th-century Cossack uprising in Ukraine: knight Jan Skrzetuski, his beloved Helena and the unforgettable rogue Zagłoba.",
+         "The first part of Sienkiewicz's Trilogy, written „to lift people's hearts”. Zagłoba is one of the funniest characters in Polish books."] }
+];
+
+function bookOfTheDay() {
+  const today = aklToday();
+  const dayNum = Math.floor(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000);
+  return BOOKS[dayNum % BOOKS.length];
+}
+
+function renderBook() {
+  const b = bookOfTheDay();
+  const L = T[lang];
+  const [what, why] = b[lang];
+  const url = `https://wolnelektury.pl/katalog/lektura/${b.slug}/`;
+  document.getElementById("book").innerHTML = `
+    <a class="book-cover" href="${url}" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1">
+      <img src="https://wolnelektury.pl/media/book/cover_api_thumb/${b.thumb}" alt="" loading="lazy" onerror="this.parentNode.style.display='none'">
+    </a>
+    <div class="book-body">
+      <h3>${b.t}</h3>
+      <div class="meta">${b.a} · ${b.y}${b.mins ? ` · ${L.readTime(b.mins)}` : ""}</div>
+      <p><strong>${L.bookWhat}</strong> ${what}</p>
+      <p><strong>${L.bookWhy}</strong> ${why}</p>
+      <div class="book-actions">
+        <a class="read-btn" href="${url}" target="_blank" rel="noopener">📖 ${L.read}</a>
+        ${b.audio ? `<span class="audio-note">🎧 ${L.audio}</span>` : ""}
+      </div>
+    </div>`;
+}
+
 // ---------- BOOT ----------
 function renderAll() {
   renderHeader(); tickClocks(); setupCities();
+  renderBook();
   renderEvents(EVENTS.polish, "ev-pl", "pl");
   renderEvents(EVENTS.auckland, "ev-akl", "au");
   loadWeather();
@@ -505,7 +720,7 @@ document.getElementById("lang-btn").onclick = () => {
 };
 renderAll();
 setInterval(tickClocks, 15 * 1000);
-setInterval(() => { renderHeader(); loadWeather(); }, 30 * 60 * 1000);
+setInterval(renderAll, 30 * 60 * 1000); // keeps greeting, book of the day and event badges fresh past midnight
 </script>
 </body>
 </html>
