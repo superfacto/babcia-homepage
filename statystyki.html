@@ -103,7 +103,8 @@ function hbars(rows, unit) {
 const fmtDate = (iso) => iso ? new Intl.DateTimeFormat("en-NZ", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Pacific/Auckland" }).format(new Date(iso)) : "—";
 
 async function load() {
-  const key = $("#key").value.trim(); ls("babcia-stats-key", key);
+  // trim spaces and a trailing "%" (zsh adds one when you `cat` a file without a final newline)
+  const key = $("#key").value.trim().replace(/%+$/, ""); $("#key").value = key; ls("babcia-stats-key", key);
   const days = +$("#days").value;
   const dev = $("#dev").value === "all" && devPicked ? devPicked : $("#dev").value;
   $("#out").innerHTML = `<div class="msg">Loading…</div>`;
