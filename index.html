@@ -942,20 +942,28 @@ async function playStation(i) {
   const st = STATIONS[i];
   status.textContent = L.connecting;
   const fail = () => { if (radioNow === i) { status.innerHTML = L.radioErr(st.n, st.page); radioNow = -1; renderStations(); } };
+  const ok = () => { if (radioNow === i) { status.textContent = L.playing(st.n); radioSince = Date.now(); } };
+  const isHls = /\.m3u8/.test(st.u);
+  // Backup player: hls.js. Used when the browser has no built-in HLS, or when the built-in
+  // player rejects the stream (Polskie Radio's server sometimes sends playlists it can't decode).
+  const viaHlsJs = async () => {
+    a.onerror = null; a.removeAttribute("src"); a.load();
+    await loadHlsJs();
+    if (!window.Hls || !Hls.isSupported()) throw new Error("no HLS");
+    if (radioNow !== i) return;
+    hls = new Hls(); hls.loadSource(st.u); hls.attachMedia(a);
+    hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) fail(); });
+    await a.play(); ok();
+  };
   try {
-    if (/\.m3u8/.test(st.u) && !a.canPlayType("application/vnd.apple.mpegurl")) {
-      await loadHlsJs();
-      if (!window.Hls || !Hls.isSupported()) throw new Error("no HLS");
-      hls = new Hls(); hls.loadSource(st.u); hls.attachMedia(a);
-      hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) fail(); });
-    } else {
-      a.src = st.u;
-    }
-    a.onerror = fail;
-    await a.play();
-    status.textContent = L.playing(st.n);
-    radioSince = Date.now();
-  } catch (e) { fail(); }
+    if (isHls && !a.canPlayType("application/vnd.apple.mpegurl")) { await viaHlsJs(); return; }
+    a.src = st.u;
+    a.onerror = () => { if (isHls && !hls && radioNow === i) viaHlsJs().catch(fail); else fail(); };
+    await a.play(); ok();
+  } catch (e) {
+    if (isHls && !hls && radioNow === i) { try { await viaHlsJs(); return; } catch { } }
+    fail();
+  }
 }
 document.getElementById("stations").onclick = (e) => { const b = e.target.closest("[data-st]"); if (b) playStation(+b.dataset.st); };
 
