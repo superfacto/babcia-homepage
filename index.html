@@ -61,16 +61,14 @@
   @media (max-width: 520px) {
     html { font-size: 18px; }
     h1 { font-size: 1.9rem; }
-    .event { grid-template-columns: 72px minmax(0,1fr); gap: 12px; }
     .card { padding: 16px; }
-    .event h4 { font-size: 1.02rem; hyphens: auto; }
     .days { grid-template-columns: repeat(4, minmax(0,1fr)); }
     .now .temp { font-size: 2.8rem; }
   }
   .err { color: var(--red); }
 
   .events { display: grid; gap: 14px; }
-  .event { display: grid; grid-template-columns: 92px minmax(0,1fr); overflow-wrap: anywhere; gap: 18px; align-items: start; }
+  .event { display: grid; grid-template-columns: 92px minmax(0,1fr) 128px; overflow-wrap: anywhere; gap: 18px; align-items: start; }
   .date-box { background: var(--red-soft); color: var(--red); border-radius: 14px; text-align: center; padding: 10px 4px; }
   .date-box .d { font-size: 2rem; font-weight: bold; line-height: 1; }
   .date-box .m { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
@@ -82,6 +80,22 @@
   .event .note { font-size: .9rem; margin-top: 6px; }
   .event a { color: var(--red); }
   .event.au a { color: var(--blue); }
+  .share {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    align-self: center; min-height: 96px; padding: 12px 10px; border-radius: 16px;
+    background: #2e9d57; color: #fff !important; text-decoration: none; text-align: center;
+    font-family: system-ui, -apple-system, sans-serif; font-size: .78rem; font-weight: 600; line-height: 1.2; overflow-wrap: normal;
+    box-shadow: 0 2px 6px rgba(46, 157, 87, .3); -webkit-tap-highlight-color: transparent;
+  }
+  .share:hover { background: #268a4b; }
+  .share:active { transform: scale(.97); }
+  .share svg { width: 30px; height: 30px; flex: none; }
+  @media (max-width: 520px) {
+    .event { grid-template-columns: 72px minmax(0,1fr); gap: 12px; }
+    .event h4 { font-size: 1.02rem; hyphens: auto; }
+    .share { grid-column: 2; flex-direction: row; min-height: 52px; font-size: .85rem; align-self: stretch; }
+    .share svg { width: 24px; height: 24px; }
+  }
   .soon { display: inline-block; background: var(--red); color: #fff; font-size: .65rem; padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 6px; font-family: system-ui, sans-serif; }
   .more { margin-top: 10px; font-size: .9rem; color: var(--muted); }
   .more a { color: inherit; }
@@ -216,7 +230,7 @@ const T = {
     polishEvents: "Polskie wydarzenia w Auckland", aklEvents: "Inne wydarzenia w Auckland",
     moreAt: "Więcej:", footer: "Pogoda: Open-Meteo / MET Norway · Wydarzenia sprawdzone",
     feels: "odczuwalna", wind: "wiatr", now: "Teraz", details: "Szczegóły",
-    noEvents: "Na razie brak — sprawdź linki poniżej.", today: "dziś", tomorrow: "jutro", onNow: "trwa teraz",
+    noEvents: "Na razie brak — sprawdź linki poniżej.", today: "dziś", tomorrow: "jutro", onNow: "trwa teraz", share: "Wyślij to komuś SMS‑em", details2: "Więcej",
     until: "do", weatherErr: "Nie udało się pobrać pogody. Spróbuj odświeżyć stronę.", lang: "English"
   },
   en: {
@@ -225,7 +239,7 @@ const T = {
     polishEvents: "Polish events in Auckland", aklEvents: "Other Auckland events",
     moreAt: "More:", footer: "Weather: Open-Meteo / MET Norway · Events checked",
     feels: "feels like", wind: "wind", now: "Now", details: "Details",
-    noEvents: "Nothing right now — see the links below.", today: "today", tomorrow: "tomorrow", onNow: "on now",
+    noEvents: "Nothing right now — see the links below.", today: "today", tomorrow: "tomorrow", onNow: "on now", share: "Text this to someone", details2: "More",
     until: "until", weatherErr: "Couldn't load the weather. Try refreshing the page.", lang: "Polski"
   }
 };
@@ -432,6 +446,27 @@ function dateBox(ev, today) {
   }
   return `<div class="date-box"><div class="d">${s.getDate()}</div><div class="m">${fmtM(s)}</div><div class="w">${fmtW(s)}</div></div>`;
 }
+// Text message for the "Text this to someone" button
+const IS_APPLE = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
+function smsHref(ev, today) {
+  const long = (d) => new Intl.DateTimeFormat(locale(), { weekday: "long", day: "numeric", month: "long" }).format(d);
+  const dm = (d) => new Intl.DateTimeFormat(locale(), { day: "numeric", month: "long" }).format(d);
+  let date;
+  if (ev._start.getTime() === ev._end.getTime()) date = long(ev._start);
+  else if (ev._start <= today) date = `${T[lang].until} ${dm(ev._end)}`;
+  else date = `${dm(ev._start)} – ${dm(ev._end)}`;
+  const lines = [
+    tx(ev.title),
+    `📅 ${date}${ev.when ? ", " + tx(ev.when) : ""}`,
+    `📍 ${tx(ev.where)}`,
+    ev.note ? tx(ev.note) : "",
+    ev.link ? `${T[lang].details2}: ${ev.link}` : ""
+  ].filter(Boolean).join("\n");
+  // iPhone/iPad/Mac Messages use "sms:&body=", Android uses "sms:?body="
+  return (IS_APPLE ? "sms:&body=" : "sms:?body=") + encodeURIComponent(lines);
+}
+const SMS_ICON = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.6 3.4 6.1-.2 1.3-.8 2.6-1.8 3.6 2 0 3.8-.7 5.1-1.7 1 .3 2.1.4 3.3.4 5.5 0 10-3.6 10-8s-4.5-8.4-10-8.4z" fill="#fff"/><circle cx="8" cy="11" r="1.3" fill="#2e9d57"/><circle cx="12" cy="11" r="1.3" fill="#2e9d57"/><circle cx="16" cy="11" r="1.3" fill="#2e9d57"/></svg>`;
+
 function renderEvents(list, elId, cls) {
   const today = aklToday();
   const items = list.map(ev => {
@@ -453,6 +488,7 @@ function renderEvents(list, elId, cls) {
         ${ev.note ? `<div class="note">${tx(ev.note)}</div>` : ""}
         ${ev.link ? `<div class="note"><a href="${ev.link}" target="_blank" rel="noopener">${T[lang].details} →</a></div>` : ""}
       </div>
+      <a class="share" href="${smsHref(ev, today)}" aria-label="${T[lang].share}: ${tx(ev.title)}">${SMS_ICON}<span>${T[lang].share}</span></a>
     </div>`;
   }).join("");
 }
