@@ -13,6 +13,8 @@ A simple, big-text homepage for a Polish grandma in Auckland.
   Past events hide themselves automatically.
 - **Daily shelf** — 10 picks a day (books from Wolne Lektury + free Polish films) from `library.js`;
   history, memoirs, legends, travel and classics — no crime, sci-fi or romance-led stories. Previous/Next by day.
+- **Na wesoło (comedy)** — 6 a day from `COMEDY` in `library.js`: sketches from official cabaret YouTube channels
+  (Neo-Nówka, Paranienormalni, Młodych Panów, hrAbi, Moralnego Niepokoju) and classic comedies on 35mm.online.
 - **Text this to someone** — each event has a button that opens Messages with the details filled in.
 - Polish by default, with an English button.
 

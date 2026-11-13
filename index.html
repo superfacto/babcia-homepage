@@ -129,6 +129,9 @@
   .pick .badge { display: inline-block; font-family: system-ui, -apple-system, sans-serif; font-size: .65rem; font-weight: 700; letter-spacing: .04em;
     text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--red-soft); color: var(--red); }
   .pick.film .badge { background: #e8f0f6; color: var(--blue); }
+  .pick.fun .badge { background: #fff4cc; color: #8a6d00; }
+  .pick.film.fun .read-btn { background: #b07800; }
+  .pick.film.fun .read-btn:hover { background: #8f6200; }
   .pick h3 { margin: 6px 0 0; font-size: 1.15rem; line-height: 1.25; }
   .pick .meta { color: var(--muted); font-size: .8rem; margin: 2px 0 8px; }
   .pick p { margin: 0 0 6px; font-size: .85rem; }
@@ -195,6 +198,11 @@
   <div class="shelf-nav" id="shelf-nav"></div>
   <div class="shelf" id="shelf"></div>
   <div class="more" data-t="shelfSource">Książki za darmo z Wolnych Lektur, filmy za darmo z YouTube i 35mm.online — 10 nowych propozycji codziennie.</div>
+
+  <h2 data-t="comedyTitle">Na wesoło 😄</h2>
+  <div class="shelf-nav" id="comedy-nav"></div>
+  <div class="shelf" id="comedy"></div>
+  <div class="more" data-t="comedySource">Skecze z oficjalnych kanałów kabaretów na YouTube i klasyczne komedie z 35mm.online.</div>
 
   <h2 data-t="polishEvents">Polskie wydarzenia w Auckland</h2>
   <div class="events" id="ev-pl"></div>
@@ -297,6 +305,7 @@ const T = {
     feels: "odczuwalna", wind: "wiatr", now: "Teraz", details: "Szczegóły",
     noEvents: "Na razie brak — sprawdź linki poniżej.", today: "dziś", tomorrow: "jutro", onNow: "trwa teraz", share: "Wyślij to komuś SMS‑em",
     paperTitle: "Gazeta dnia", paperSrc: "wiadomości z wPolityce.pl", paperOpen: "Otwórz całą gazetę", paperErr: "Nie udało się pobrać wiadomości.",
+    comedyTitle: "Na wesoło 😄", comedy: "Kabaret", comedyFilm: "Komedia", more6: "Inne", comedySource: "Skecze z oficjalnych kanałów kabaretów na YouTube i klasyczne komedie z 35mm.online.",
     shelfTitle: "Na dziś: do czytania i oglądania", book: "Książka", film: "Film", doc: "Dokument",
     read: "Czytaj za darmo", watch: "Obejrzyj za darmo", next: "Następne", prev: "Poprzednie", backToday: "Dzisiejsze",
     picksFor: (d) => `Propozycje na ${d}`, audio: "🎧 jest też audiobook",
@@ -312,6 +321,7 @@ const T = {
     feels: "feels like", wind: "wind", now: "Now", details: "Details",
     noEvents: "Nothing right now — see the links below.", today: "today", tomorrow: "tomorrow", onNow: "on now", share: "Text this to someone",
     paperTitle: "Today's newspaper", paperSrc: "news from wPolityce.pl", paperOpen: "Open the whole newspaper", paperErr: "Couldn't load the news.",
+    comedyTitle: "Something funny 😄", comedy: "Cabaret", comedyFilm: "Comedy film", more6: "More", comedySource: "Sketches from the cabarets' official YouTube channels and classic comedies from 35mm.online.",
     shelfTitle: "Today's picks: to read and watch", book: "Book", film: "Film", doc: "Documentary",
     read: "Read it free", watch: "Watch it free", next: "Next", prev: "Previous", backToday: "Today's",
     picksFor: (d) => `Picks for ${d}`, audio: "🎧 audiobook too",
@@ -626,14 +636,15 @@ function pickCard(it) {
     </div>`;
   }
   const url = it.yt ? `https://www.youtube.com/watch?v=${it.yt}` : it.url;
-  const img = it.yt ? `https://i.ytimg.com/vi/${it.yt}/hqdefault.jpg` : it.img;
+  const img = it.yt ? `https://i.ytimg.com/vi/${it.yt}/hqdefault.jpg` : (it.img ? it.img + "?width=480" : null); // small 35mm.online poster
   const meta = [it.d ? `${L.dir} ${it.d}` : "", it.y, it.mins ? L.watchTime(it.mins) : "", it.yt ? "YouTube" : "35mm.online"].filter(Boolean).join(" · ");
-  return `<div class="card pick film">
+  const fun = it.kind === "komedia";
+  return `<div class="card pick film${fun ? " fun" : ""}">
     <a class="media" href="${url}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
       ${img ? `<img src="${img}" alt="" loading="lazy" onerror="this.outerHTML='<div class=ph>🎬</div>'">` : `<div class="ph">🎬</div>`}
     </a>
     <div>
-      <span class="badge">🎬 ${it.kind === "dokumentalny" ? L.doc : L.film}</span>
+      <span class="badge">${fun ? "😄 " + L.comedyFilm : "🎬 " + (it.kind === "dokumentalny" ? L.doc : L.film)}</span>
       <h3>${it.t}</h3>
       <div class="meta">${meta}</div>
       <p>${what}</p>
@@ -663,6 +674,44 @@ function renderShelf() {
   if (t) t.onclick = () => { shelfOffset = 0; renderShelf(); };
 }
 
+// ---------- COMEDY: 6 a day from window.COMEDY (library.js) ----------
+const COMEDY_PER_PAGE = 6;
+const COMEDY_ORDER = seededOrder(COMEDY.length, 1967);
+let comedyOffset = 0;
+function sketchCard(it) {
+  const L = T[lang];
+  const url = `https://www.youtube.com/watch?v=${it.yt}`;
+  return `<div class="card pick film fun">
+    <a class="media" href="${url}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+      <img src="https://i.ytimg.com/vi/${it.yt}/hqdefault.jpg" alt="" loading="lazy" onerror="this.outerHTML='<div class=ph>😄</div>'">
+    </a>
+    <div>
+      <span class="badge">😄 ${L.comedy}</span>
+      <h3>${it.t}</h3>
+      <div class="meta">${it.who} · ${it.mins} min · YouTube</div>
+      <div class="acts"><a class="read-btn" href="${url}" target="_blank" rel="noopener">▶ ${L.watch}</a></div>
+    </div>
+  </div>`;
+}
+function renderComedy() {
+  const L = T[lang];
+  const today = aklToday();
+  const dayNum = Math.floor(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000);
+  const items = take(COMEDY, COMEDY_ORDER, COMEDY_PER_PAGE, dayNum + comedyOffset);
+  document.getElementById("comedy-nav").innerHTML = `
+    <div class="label"></div>
+    <div class="btns">
+      <button type="button" id="comedy-prev">← ${L.prev}</button>
+      ${comedyOffset ? `<button type="button" class="today-btn" id="comedy-today">↺ ${L.backToday}</button>` : ""}
+      <button type="button" id="comedy-next">${L.more6} →</button>
+    </div>`;
+  document.getElementById("comedy").innerHTML = items.map(it => it.yt && it.who ? sketchCard(it) : pickCard({ ...it, type: "film" })).join("");
+  document.getElementById("comedy-prev").onclick = () => { comedyOffset--; renderComedy(); };
+  document.getElementById("comedy-next").onclick = () => { comedyOffset++; renderComedy(); };
+  const t = document.getElementById("comedy-today");
+  if (t) t.onclick = () => { comedyOffset = 0; renderComedy(); };
+}
+
 // ---------- NEWSPAPER HEADLINES (from /api/gazeta, see netlify/functions/gazeta.mjs) ----------
 let paperData = null;
 async function loadHeadlines() {
@@ -687,6 +736,7 @@ async function loadHeadlines() {
 function renderAll() {
   renderHeader(); tickClocks(); setupCities();
   renderShelf();
+  renderComedy();
   loadHeadlines();
   renderEvents(EVENTS.polish, "ev-pl", "pl");
   renderEvents(EVENTS.auckland, "ev-akl", "au");
