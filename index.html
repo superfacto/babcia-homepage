@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strona Babci</title>
+<style>
+  :root {
+    --bg: #fbf7f0;
+    --card: #ffffff;
+    --ink: #2a2522;
+    --muted: #6b625b;
+    --red: #c8102e;
+    --red-soft: #fbe9ec;
+    --line: #e8dfd3;
+    --blue: #1f5f8b;
+    --shadow: 0 2px 10px rgba(60, 40, 20, .07);
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 20px; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    line-height: 1.45;
+  }
+  .flag { height: 10px; background: linear-gradient(#fff 50%, var(--red) 50%); border-bottom: 1px solid var(--line); }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 28px; }
+  h1 { font-size: 2.3rem; margin: 0; line-height: 1.1; }
+  .today { font-size: 1.15rem; color: var(--muted); margin-top: 6px; }
+  .clocks { display: flex; gap: 12px; flex-wrap: wrap; }
+  .clock { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 16px; box-shadow: var(--shadow); text-align: center; min-width: 150px; }
+  .clock .where { font-size: .8rem; color: var(--muted); }
+  .clock .time { font-size: 1.6rem; font-weight: bold; font-variant-numeric: tabular-nums; }
+  .lang { font: inherit; font-size: .8rem; background: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; color: var(--muted); }
+  .lang:hover { border-color: var(--red); color: var(--red); }
+
+  h2 { font-size: 1.5rem; margin: 40px 0 14px; display: flex; align-items: center; gap: 10px; }
+  h2::before { content: ""; width: 8px; height: 1.3em; background: var(--red); border-radius: 4px; }
+
+  .weather-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 20px; }
+  @media (max-width: 820px) { .weather-grid { grid-template-columns: minmax(0,1fr); } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; box-shadow: var(--shadow); }
+  .w-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .w-head h3 { margin: 0; font-size: 1.3rem; }
+  select { font: inherit; font-size: .95rem; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  .now { display: flex; align-items: center; gap: 18px; margin: 14px 0 6px; }
+  .now .icon { font-size: 4rem; line-height: 1; }
+  .now .temp { font-size: 3.4rem; font-weight: bold; line-height: 1; }
+  .now .desc { font-size: 1.1rem; }
+  .now .extra { color: var(--muted); font-size: .9rem; }
+  .days { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 6px; margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; }
+  .day { text-align: center; padding: 6px 2px; border-radius: 10px; }
+  .day.weekend { background: var(--bg); }
+  .day .dn { font-size: .78rem; font-weight: bold; }
+  .day .dd { font-size: .65rem; color: var(--muted); }
+  .day .di { font-size: 1.6rem; margin: 4px 0; }
+  .day .hi { font-weight: bold; }
+  .day .lo { color: var(--muted); font-size: .85rem; }
+  .day .rain { color: var(--blue); font-size: .65rem; white-space: nowrap; }
+  @media (max-width: 520px) {
+    html { font-size: 18px; }
+    h1 { font-size: 1.9rem; }
+    .event { grid-template-columns: 72px minmax(0,1fr); gap: 12px; }
+    .card { padding: 16px; }
+    .event h4 { font-size: 1.02rem; hyphens: auto; }
+    .days { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .now .temp { font-size: 2.8rem; }
+  }
+  .err { color: var(--red); }
+
+  .events { display: grid; gap: 14px; }
+  .event { display: grid; grid-template-columns: 92px minmax(0,1fr); overflow-wrap: anywhere; gap: 18px; align-items: start; }
+  .date-box { background: var(--red-soft); color: var(--red); border-radius: 14px; text-align: center; padding: 10px 4px; }
+  .date-box .d { font-size: 2rem; font-weight: bold; line-height: 1; }
+  .date-box .m { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+  .date-box .w { font-size: .7rem; color: var(--ink); margin-top: 2px; }
+  .date-box.range .d { font-size: 1rem; line-height: 1.25; }
+  .event.au .date-box { background: #e8f0f6; color: var(--blue); }
+  .event h4 { margin: 0 0 4px; font-size: 1.15rem; }
+  .event .meta { color: var(--muted); font-size: .9rem; }
+  .event .note { font-size: .9rem; margin-top: 6px; }
+  .event a { color: var(--red); }
+  .event.au a { color: var(--blue); }
+  .soon { display: inline-block; background: var(--red); color: #fff; font-size: .65rem; padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 6px; font-family: system-ui, sans-serif; }
+  .more { margin-top: 10px; font-size: .9rem; color: var(--muted); }
+  .more a { color: inherit; }
+  footer { margin-top: 50px; font-size: .75rem; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<div class="flag"></div>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="greeting"></h1>
+      <div class="today" id="today"></div>
+    </div>
+    <div class="clocks">
+      <div class="clock"><div class="where">🇳🇿 Auckland</div><div class="time" id="clock-akl">--:--</div></div>
+      <div class="clock"><div class="where">🇵🇱 <span data-t="poland">Polska</span></div><div class="time" id="clock-pl">--:--</div></div>
+      <button class="lang" id="lang-btn" type="button">English</button>
+    </div>
+  </header>
+
+  <h2 data-t="weather">Pogoda</h2>
+  <div class="weather-grid">
+    <div class="card" id="w-akl">
+      <div class="w-head"><h3>🇳🇿 Auckland</h3></div>
+      <div class="body"><p data-t="loading">Ładowanie…</p></div>
+    </div>
+    <div class="card" id="w-pl">
+      <div class="w-head">
+        <h3>🇵🇱 <span id="pl-name">Warszawa</span></h3>
+        <select id="pl-city" aria-label="Miasto"></select>
+      </div>
+      <div class="body"><p data-t="loading">Ładowanie…</p></div>
+    </div>
+  </div>
+
+  <h2 data-t="polishEvents">Polskie wydarzenia w Auckland</h2>
+  <div class="events" id="ev-pl"></div>
+  <div class="more"><span data-t="moreAt">Więcej:</span>
+    <a href="https://poloniaauckland.co.nz/" target="_blank" rel="noopener">Auckland Polish Association (Dom Polski)</a> ·
+    <a href="https://polishheritage.co.nz/" target="_blank" rel="noopener">Polish Museum, Howick</a>
+  </div>
+
+  <h2 data-t="aklEvents">Inne wydarzenia w Auckland</h2>
+  <div class="events" id="ev-akl"></div>
+  <div class="more"><span data-t="moreAt">Więcej:</span>
+    <a href="https://ourauckland.aucklandcouncil.govt.nz/events/" target="_blank" rel="noopener">OurAuckland</a> ·
+    <a href="https://www.aucklandnz.com/events" target="_blank" rel="noopener">aucklandnz.com</a>
+  </div>
+
+  <footer><span data-t="footer">Pogoda: Open-Meteo / MET Norway · Wydarzenia sprawdzone</span> 13.11.2026</footer>
+</div>
+
+<script>
+// ---------- EVENTS (edit here) ----------
+// start/end are YYYY-MM-DD. Events disappear automatically the day after `end`.
+const EVENTS = {
+  polish: [
+    {
+      start: "2026-11-10", end: "2026-12-09",
+      title: { pl: "Wystawa: Andrzej Wajda — Rok Wajdy 2026", en: "Exhibition: Andrzej Wajda — Polish Year 2026" },
+      where: "Polish Museum, 125 Elliot St, Howick",
+      when: { pl: "wt–pt 10:00–16:00, nd 12:00–17:00", en: "Tue–Fri 10am–4pm, Sun 12–5pm" },
+      note: { pl: "Wstęp wolny (datki mile widziane). Tel. 09 533 3530", en: "Free entry (donations welcome). Ph 09 533 3530" },
+      link: "https://eastaucklandtourism.co.nz/event/polish-year-of-2026-focus-on-andrzej-wajda-film-director/"
+    },
+    {
+      start: "2026-11-29", end: "2026-11-29",
+      title: { pl: "Opłatek i spotkanie świąteczne z Mikołajem", en: "Opłatek & Christmas party with Santa" },
+      where: "Dom Polski, 1 McDonald St, Morningside",
+      when: { pl: "14:00–17:00", en: "2–5pm" },
+      note: { pl: "Kolędy, opłatek, bar. Przynieś danie do wspólnego stołu i prezent do $10 (Secret Santa). Wszyscy mile widziani!",
+              en: "Polish carols, opłatek wafer, bar. Bring a potluck dish and a gift up to $10 (Secret Santa). All welcome!" },
+      link: "https://poloniaauckland.co.nz/events/polish-xmas-lunch-oplatek/"
+    },
+    {
+      start: "2026-12-06", end: "2026-12-06",
+      title: { pl: "Polski Jarmark Bożonarodzeniowy", en: "Polish Christmas Market" },
+      where: "Dom Polski, 1 McDonald St, Morningside",
+      when: { pl: "od 13:00", en: "from 1pm" },
+      note: { pl: "Polskie jedzenie i stoiska. Wszyscy mile widziani!", en: "Polish food and stalls. All welcome!" },
+      link: "https://poloniaauckland.co.nz/events/polish-xmas-market/"
+    }
+  ],
+  auckland: [
+    {
+      start: "2026-11-12", end: "2026-11-22",
+      title: { pl: "Auckland FEAST — festiwal kulinarny", en: "Auckland FEAST food festival" },
+      where: { pl: "Restauracje w całym mieście", en: "Restaurants across the city" },
+      note: { pl: "Specjalne menu w wielu restauracjach.", en: "Special menus at many restaurants." },
+      link: "https://www.aucklandnz.com/events/all-events/auckland-feast"
+    },
+    {
+      start: "2026-11-29", end: "2026-11-29",
+      title: { pl: "Parada Mikołajów (Farmers Santa Parade)", en: "Farmers Santa Parade" },
+      where: "Queen Street",
+      when: { pl: "od 13:00", en: "from 1pm" },
+      note: { pl: "Jeśli pada — przełożona na 6 grudnia.", en: "If it rains — moved to 6 December." },
+      link: "https://www.aucklandnz.com/events/all-events/farmers-santa-parade-auckland"
+    },
+    {
+      start: "2026-12-12", end: "2026-12-12",
+      title: { pl: "Christmas in the Park — koncert i fajerwerki", en: "Christmas in the Park — concert & fireworks" },
+      where: "Auckland Domain",
+      when: { pl: "wieczór", en: "evening" },
+      note: { pl: "Darmowy koncert pod gołym niebem. Weź koc!", en: "Free outdoor concert. Bring a blanket!" },
+      link: "https://www.aucklandnz.com/events/all-events/coca-cola-christmas-in-the-park"
+    },
+    {
+      weekly: 6, // Saturday
+      title: { pl: "Targ w Howick (co sobotę)", en: "Howick Village Market (every Saturday)" },
+      where: "91 Picton St, Howick",
+      when: { pl: "8:00–12:30", en: "8am–12:30pm" },
+      link: "https://eastaucklandtourism.co.nz/events/"
+    }
+  ]
+};
+
+// ---------- POLISH CITIES ----------
+const CITIES = [
+  ["Warszawa", 52.23, 21.01], ["Kraków", 50.06, 19.94], ["Gdańsk", 54.35, 18.65],
+  ["Wrocław", 51.11, 17.03], ["Poznań", 52.41, 16.93], ["Łódź", 51.76, 19.46],
+  ["Szczecin", 53.43, 14.55], ["Lublin", 51.25, 22.57], ["Katowice", 50.26, 19.02],
+  ["Białystok", 53.13, 23.16], ["Rzeszów", 50.04, 22.00], ["Zakopane", 49.30, 19.95]
+];
+
+// ---------- TEXT ----------
+const T = {
+  pl: {
+    hello: ["Dzień dobry, Babciu!", "Dzień dobry, Babciu!", "Dobry wieczór, Babciu!"],
+    poland: "Polska", weather: "Pogoda", loading: "Ładowanie…",
+    polishEvents: "Polskie wydarzenia w Auckland", aklEvents: "Inne wydarzenia w Auckland",
+    moreAt: "Więcej:", footer: "Pogoda: Open-Meteo / MET Norway · Wydarzenia sprawdzone",
+    feels: "odczuwalna", wind: "wiatr", now: "Teraz", details: "Szczegóły",
+    noEvents: "Na razie brak — sprawdź linki poniżej.", today: "dziś", tomorrow: "jutro", onNow: "trwa teraz",
+    until: "do", weatherErr: "Nie udało się pobrać pogody. Spróbuj odświeżyć stronę.", lang: "English"
+  },
+  en: {
+    hello: ["Good morning, Babcia!", "Good afternoon, Babcia!", "Good evening, Babcia!"],
+    poland: "Poland", weather: "Weather", loading: "Loading…",
+    polishEvents: "Polish events in Auckland", aklEvents: "Other Auckland events",
+    moreAt: "More:", footer: "Weather: Open-Meteo / MET Norway · Events checked",
+    feels: "feels like", wind: "wind", now: "Now", details: "Details",
+    noEvents: "Nothing right now — see the links below.", today: "today", tomorrow: "tomorrow", onNow: "on now",
+    until: "until", weatherErr: "Couldn't load the weather. Try refreshing the page.", lang: "Polski"
+  }
+};
+
+const WMO = { // code: [emoji, pl, en]
+  0: ["☀️", "Słonecznie", "Sunny"], 1: ["🌤️", "Przeważnie słonecznie", "Mostly sunny"],
+  2: ["⛅", "Częściowe zachmurzenie", "Partly cloudy"], 3: ["☁️", "Pochmurno", "Cloudy"],
+  45: ["🌫️", "Mgła", "Fog"], 48: ["🌫️", "Mgła", "Fog"],
+  51: ["🌦️", "Mżawka", "Drizzle"], 53: ["🌦️", "Mżawka", "Drizzle"], 55: ["🌦️", "Mżawka", "Drizzle"],
+  56: ["🌧️", "Marznąca mżawka", "Freezing drizzle"], 57: ["🌧️", "Marznąca mżawka", "Freezing drizzle"],
+  61: ["🌧️", "Lekki deszcz", "Light rain"], 63: ["🌧️", "Deszcz", "Rain"], 65: ["🌧️", "Ulewa", "Heavy rain"],
+  66: ["🌧️", "Marznący deszcz", "Freezing rain"], 67: ["🌧️", "Marznący deszcz", "Freezing rain"],
+  71: ["🌨️", "Lekki śnieg", "Light snow"], 73: ["🌨️", "Śnieg", "Snow"], 75: ["❄️", "Duży śnieg", "Heavy snow"],
+  77: ["🌨️", "Śnieg", "Snow grains"],
+  80: ["🌦️", "Przelotny deszcz", "Showers"], 81: ["🌧️", "Przelotny deszcz", "Showers"], 82: ["⛈️", "Ulewy", "Heavy showers"],
+  85: ["🌨️", "Przelotny śnieg", "Snow showers"], 86: ["❄️", "Przelotny śnieg", "Snow showers"],
+  95: ["⛈️", "Burza", "Thunderstorm"], 96: ["⛈️", "Burza z gradem", "Thunderstorm, hail"], 99: ["⛈️", "Burza z gradem", "Thunderstorm, hail"]
+};
+
+// ---------- STATE ----------
+const store = {
+  get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+};
+let lang = store.get("babcia-lang", "pl");
+let cityName = store.get("babcia-city", "Warszawa");
+const cache = {};
+
+const locale = () => lang === "pl" ? "pl-PL" : "en-NZ";
+const tx = (v) => (v && typeof v === "object") ? v[lang] : v;
+
+// ---------- HEADER ----------
+function renderHeader() {
+  document.documentElement.lang = lang;
+  const h = Number(new Intl.DateTimeFormat("en-NZ", { hour: "numeric", hour12: false, timeZone: "Pacific/Auckland" }).format(new Date()));
+  document.getElementById("greeting").textContent = T[lang].hello[h < 12 ? 0 : h < 18 ? 1 : 2];
+  document.getElementById("today").textContent = new Intl.DateTimeFormat(locale(), {
+    weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Pacific/Auckland"
+  }).format(new Date());
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = T[lang][el.dataset.t]; });
+  document.getElementById("lang-btn").textContent = T[lang].lang;
+}
+function tickClocks() {
+  const f = (tz) => new Intl.DateTimeFormat("pl-PL", { hour: "2-digit", minute: "2-digit", timeZone: tz }).format(new Date());
+  document.getElementById("clock-akl").textContent = f("Pacific/Auckland");
+  document.getElementById("clock-pl").textContent = f("Europe/Warsaw");
+}
+
+// ---------- WEATHER ----------
+// Primary source: Open-Meteo. Fallback: MET Norway (yr.no), normalised to the same shape.
+async function getJSON(url, ms) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: ctl.signal });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return await r.json();
+  } finally { clearTimeout(timer); }
+}
+
+async function fromOpenMeteo(lat, lon, tz) {
+  return getJSON("https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon +
+    "&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m" +
+    "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
+    "&timezone=" + encodeURIComponent(tz) + "&forecast_days=8", 6000);
+}
+
+function metToWmo(sym) {
+  const s = (sym || "").replace(/_(day|night|polartwilight)$/, "");
+  if (s.includes("thunder")) return 95;
+  return ({
+    clearsky: 0, fair: 1, partlycloudy: 2, cloudy: 3, fog: 45,
+    lightrain: 61, rain: 63, heavyrain: 65,
+    lightrainshowers: 80, rainshowers: 81, heavyrainshowers: 82,
+    lightsleet: 66, sleet: 66, heavysleet: 67,
+    lightsleetshowers: 85, sleetshowers: 85, heavysleetshowers: 86,
+    lightsnow: 71, snow: 73, heavysnow: 75,
+    lightsnowshowers: 85, snowshowers: 85, heavysnowshowers: 86
+  })[s] ?? 3;
+}
+
+async function fromMetNo(lat, lon, tz) {
+  const d = await getJSON(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`, 10000);
+  const ts = d.properties.timeseries;
+  const localDate = new Intl.DateTimeFormat("en-CA", { timeZone: tz });
+  const localHour = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "numeric", hour12: false });
+  const now = Date.now();
+  const cur = ts.find(t => new Date(t.time).getTime() >= now - 3600e3) || ts[0];
+  const ci = cur.data.instant.details;
+  const days = {};
+  ts.forEach((t, i) => {
+    const when = new Date(t.time);
+    const key = localDate.format(when);
+    const day = days[key] || (days[key] = { max: -99, min: 99, rain: 0, sym: null, symScore: 99 });
+    const temp = t.data.instant.details.air_temperature;
+    day.max = Math.max(day.max, temp); day.min = Math.min(day.min, temp);
+    const step = ts[i + 1] ? (new Date(ts[i + 1].time) - when) / 3600e3 : 6;
+    const p = step <= 1 ? t.data.next_1_hours?.details?.precipitation_amount : t.data.next_6_hours?.details?.precipitation_amount;
+    day.rain += p || 0;
+    // the day's icon: the 6-hour forecast closest to midday
+    const sym = t.data.next_6_hours?.summary?.symbol_code;
+    const score = Math.abs(Number(localHour.format(when)) - 11);
+    if (sym && score < day.symScore) { day.sym = sym; day.symScore = score; }
+  });
+  const keys = Object.keys(days).sort().slice(0, 8);
+  return {
+    source: "met",
+    current: {
+      temperature_2m: ci.air_temperature, apparent_temperature: null,
+      weather_code: metToWmo(cur.data.next_1_hours?.summary?.symbol_code || cur.data.next_6_hours?.summary?.symbol_code),
+      wind_speed_10m: ci.wind_speed * 3.6
+    },
+    daily: {
+      time: keys,
+      weather_code: keys.map(k => metToWmo(days[k].sym)),
+      temperature_2m_max: keys.map(k => days[k].max),
+      temperature_2m_min: keys.map(k => days[k].min),
+      rain_mm: keys.map(k => days[k].rain)
+    }
+  };
+}
+
+async function fetchWeather(lat, lon, tz) {
+  const key = `${lat},${lon}`;
+  if (cache[key] && Date.now() - cache[key].at < 15 * 60 * 1000) return cache[key].data;
+  let data;
+  try { data = await fromOpenMeteo(lat, lon, tz); }
+  catch (e) { console.warn("Open-Meteo failed, using MET Norway", e); data = await fromMetNo(lat, lon, tz); }
+  cache[key] = { at: Date.now(), data };
+  return data;
+}
+
+function renderWeather(el, data) {
+  const c = data.current, d = data.daily;
+  const w = WMO[c.weather_code] || ["🌡️", "", ""];
+  const days = d.time.slice(1, 8).map((iso, i) => {
+    const j = i + 1;
+    const dt = new Date(iso + "T12:00:00");
+    const wd = dt.getDay();
+    const ww = WMO[d.weather_code[j]] || ["🌡️"];
+    const prob = d.precipitation_probability_max?.[j];
+    const mm = d.rain_mm?.[j];
+    const rain = prob != null ? (prob >= 20 ? `💧${prob}%` : "")
+               : mm != null && mm >= 1 ? `💧${Math.round(mm)} mm` : "";
+    return `<div class="day${wd === 0 || wd === 6 ? " weekend" : ""}">
+      <div class="dn">${new Intl.DateTimeFormat(locale(), { weekday: "short" }).format(dt)}</div>
+      <div class="dd">${dt.getDate()}.${String(dt.getMonth() + 1).padStart(2, "0")}</div>
+      <div class="di">${ww[0]}</div>
+      <div class="hi">${Math.round(d.temperature_2m_max[j])}°</div>
+      <div class="lo">${Math.round(d.temperature_2m_min[j])}°</div>
+      ${rain ? `<div class="rain">${rain}</div>` : ""}
+    </div>`;
+  }).join("");
+  el.querySelector(".body").innerHTML = `
+    <div class="now">
+      <div class="icon">${w[0]}</div>
+      <div>
+        <div class="temp">${Math.round(c.temperature_2m)}°C</div>
+        <div class="desc">${lang === "pl" ? w[1] : w[2]}</div>
+        <div class="extra">${c.apparent_temperature != null ? `${T[lang].feels} ${Math.round(c.apparent_temperature)}° · ` : ""}${T[lang].wind} ${Math.round(c.wind_speed_10m)} km/h</div>
+      </div>
+    </div>
+    <div class="days">${days}</div>`;
+}
+
+async function loadWeather() {
+  const jobs = [
+    [document.getElementById("w-akl"), -36.85, 174.76, "Pacific/Auckland"],
+    (() => { const c = CITIES.find(x => x[0] === cityName) || CITIES[0]; return [document.getElementById("w-pl"), c[1], c[2], "Europe/Warsaw"]; })()
+  ];
+  await Promise.all(jobs.map(async ([el, lat, lon, tz]) => {
+    try { renderWeather(el, await fetchWeather(lat, lon, tz)); }
+    catch (e) { el.querySelector(".body").innerHTML = `<p class="err">${T[lang].weatherErr}</p>`; console.error(e); }
+  }));
+}
+
+function setupCities() {
+  const sel = document.getElementById("pl-city");
+  sel.innerHTML = CITIES.map(c => `<option${c[0] === cityName ? " selected" : ""}>${c[0]}</option>`).join("");
+  document.getElementById("pl-name").textContent = cityName;
+  sel.onchange = () => {
+    cityName = sel.value; store.set("babcia-city", cityName);
+    document.getElementById("pl-name").textContent = cityName;
+    loadWeather();
+  };
+}
+
+// ---------- EVENTS ----------
+function aklToday() {
+  const s = new Intl.DateTimeFormat("en-CA", { timeZone: "Pacific/Auckland" }).format(new Date());
+  return new Date(s + "T00:00:00");
+}
+function nextWeekday(from, wd) {
+  const d = new Date(from); d.setDate(d.getDate() + ((wd - d.getDay() + 7) % 7)); return d;
+}
+function dateBox(ev, today) {
+  const fmtM = (d) => new Intl.DateTimeFormat(locale(), { month: "short" }).format(d).replace(".", "");
+  const fmtW = (d) => new Intl.DateTimeFormat(locale(), { weekday: "long" }).format(d);
+  const s = ev._start, e = ev._end;
+  if (s.getTime() !== e.getTime()) {
+    // a range: if it already started, show "until <end>"
+    if (s <= today) return `<div class="date-box range"><div class="m">${T[lang].until}</div><div class="d">${e.getDate()} ${fmtM(e)}</div></div>`;
+    return `<div class="date-box range"><div class="d">${s.getDate()} ${fmtM(s)} –<br>${e.getDate()} ${fmtM(e)}</div></div>`;
+  }
+  return `<div class="date-box"><div class="d">${s.getDate()}</div><div class="m">${fmtM(s)}</div><div class="w">${fmtW(s)}</div></div>`;
+}
+function renderEvents(list, elId, cls) {
+  const today = aklToday();
+  const items = list.map(ev => {
+    if (ev.weekly != null) { const d = nextWeekday(today, ev.weekly); return { ...ev, _start: d, _end: d }; }
+    return { ...ev, _start: new Date(ev.start + "T00:00:00"), _end: new Date(ev.end + "T00:00:00") };
+  }).filter(ev => ev._end >= today).sort((a, b) => Math.max(a._start, today) - Math.max(b._start, today));
+  const el = document.getElementById(elId);
+  if (!items.length) { el.innerHTML = `<p>${T[lang].noEvents}</p>`; return; }
+  el.innerHTML = items.map(ev => {
+    const days = Math.round((ev._start - today) / 86400000);
+    const ongoing = ev._start <= today && ev._end >= today;
+    const badge = ongoing ? (ev._start.getTime() === ev._end.getTime() ? T[lang].today : T[lang].onNow)
+                : days === 1 ? T[lang].tomorrow : "";
+    return `<div class="card event ${cls}">
+      ${dateBox(ev, today)}
+      <div>
+        <h4>${tx(ev.title)}${badge ? `<span class="soon">${badge}</span>` : ""}</h4>
+        <div class="meta">📍 ${tx(ev.where)}${ev.when ? ` · 🕑 ${tx(ev.when)}` : ""}</div>
+        ${ev.note ? `<div class="note">${tx(ev.note)}</div>` : ""}
+        ${ev.link ? `<div class="note"><a href="${ev.link}" target="_blank" rel="noopener">${T[lang].details} →</a></div>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ---------- BOOT ----------
+function renderAll() {
+  renderHeader(); tickClocks(); setupCities();
+  renderEvents(EVENTS.polish, "ev-pl", "pl");
+  renderEvents(EVENTS.auckland, "ev-akl", "au");
+  loadWeather();
+}
+document.getElementById("lang-btn").onclick = () => {
+  lang = lang === "pl" ? "en" : "pl"; store.set("babcia-lang", lang); renderAll();
+};
+renderAll();
+setInterval(tickClocks, 15 * 1000);
+setInterval(() => { renderHeader(); loadWeather(); }, 30 * 60 * 1000);
+</script>
+</body>
+</html>
