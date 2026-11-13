@@ -3,13 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Babcia">
+<meta name="theme-color" content="#c8102e">
+
 <title>Gazeta Babci</title>
 <style>
   :root {
     --paper: #fbf8f1; --ink: #1f1b18; --muted: #6b625b; --rule: #d9cfc0; --red: #c8102e; --red-soft: #fbe9ec;
   }
   * { box-sizing: border-box; }
-  html { font-size: 20px; }
+  html { font-size: calc(20px * var(--scale, 1)); }
   body { margin: 0; background: var(--paper); color: var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif; line-height: 1.45; }
   .wrap { max-width: 1150px; margin: 0 auto; padding: 18px 16px 60px; }
   .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-family: system-ui, -apple-system, sans-serif; font-size: .8rem; }
@@ -64,17 +72,31 @@
     .masthead h1 { font-size: 2.3rem; }
   }
   @media (max-width: 520px) {
-    html { font-size: 18px; }
+    html { font-size: calc(18px * var(--scale, 1)); }
     .lead-story h2 { font-size: 1.5rem; }
   }
 </style>
+<script>
+// ---------- TEXT SIZE (A− / A+) — remembered on this device ----------
+(function () {
+  const STEPS = [0.9, 1, 1.15, 1.3, 1.45, 1.6];
+  let i; try { i = +localStorage.getItem("babcia-size"); } catch { }
+  if (!(i >= 0 && i < STEPS.length)) i = 1;
+  const apply = () => { document.documentElement.style.setProperty("--scale", STEPS[i]); try { localStorage.setItem("babcia-size", i); } catch { } };
+  apply();
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-size]"); if (!b) return;
+    i = Math.max(0, Math.min(STEPS.length - 1, i + (+b.dataset.size))); apply();
+  });
+})();
+</script>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <a href="./">← Strona główna</a>
     <a href="https://wpolityce.pl/tygodnik-sieci" target="_blank" rel="noopener">📖 Tygodnik „Sieci” →</a>
-    <button type="button" id="refresh">↻ Odśwież</button>
+    <span><button type="button" data-size="-1" aria-label="Mniejszy tekst">A−</button> <button type="button" data-size="1" aria-label="Większy tekst">A+</button> <button type="button" id="refresh">↻ Odśwież</button></span>
   </div>
   <header class="masthead">
     <h1>Gazeta Babci</h1>

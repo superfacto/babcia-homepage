@@ -18,6 +18,14 @@ A simple, big-text homepage for a Polish grandma in Auckland.
 - **Na wesoło (comedy)** — 6 a day from `COMEDY` in `library.js`: sketches from official cabaret YouTube channels
   (Neo-Nówka, Paranienormalni, Młodych Panów, hrAbi, Moralnego Niepokoju) and classic comedies on 35mm.online.
 - **Text this to someone** — each event has a button that opens Messages with the details filled in.
+- **Dziś (Today) card** — name days (`imieniny.js`), liturgy of the day (Evangelizo feed: Gospel reference + saints,
+  linking to ewangelia.org), and family birthday/name-day reminders. Family data is entered on the device and kept in
+  that browser only (never in this public repo).
+- **Radio, TV and Mass** — one-tap official streams (Polskie Radio Jedynka/24/Trójka via HLS, Radio Maryja,
+  Radio Jasna Góra), links to wPolsce24 / TVP Polonia / TV Trwam live, Jasna Góra and Łagiewniki live Masses,
+  with the next Mass times converted to Auckland time.
+- **A− / A+** text size buttons (remembered on the device).
+- **Installable** — `manifest.webmanifest` + `apple-touch-icon.png`: on iPad, Safari → Share → *Add to Home Screen*.
 - Polish by default, with an English button.
 
 ## Updating events

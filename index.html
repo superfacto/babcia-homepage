@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Babcia">
+<meta name="theme-color" content="#c8102e">
+
 <title>Strona Babci</title>
 <style>
   :root {
@@ -17,7 +25,7 @@
     --shadow: 0 2px 10px rgba(60, 40, 20, .07);
   }
   * { box-sizing: border-box; }
-  html { font-size: 20px; }
+  html { font-size: calc(20px * var(--scale, 1)); }
   body {
     margin: 0; background: var(--bg); color: var(--ink);
     font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
@@ -32,6 +40,9 @@
   .clock { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 16px; box-shadow: var(--shadow); text-align: center; min-width: 150px; }
   .clock .where { font-size: .8rem; color: var(--muted); }
   .clock .time { font-size: 1.6rem; font-weight: bold; font-variant-numeric: tabular-nums; }
+  .size-btns { display: flex; gap: 6px; }
+  .size-btns button { font: inherit; font-family: Georgia, serif; font-weight: 700; font-size: .85rem; min-width: 46px; height: 40px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; }
+  .size-btns button:hover { border-color: var(--red); color: var(--red); }
   .lang { font: inherit; font-size: .8rem; background: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; color: var(--muted); }
   .lang:hover { border-color: var(--red); color: var(--red); }
 
@@ -59,7 +70,7 @@
   .day .lo { color: var(--muted); font-size: .85rem; }
   .day .rain { color: var(--blue); font-size: .65rem; white-space: nowrap; }
   @media (max-width: 520px) {
-    html { font-size: 18px; }
+    html { font-size: calc(18px * var(--scale, 1)); }
     h1 { font-size: 1.9rem; }
     .card { padding: 16px; }
     .days { grid-template-columns: repeat(4, minmax(0,1fr)); }
@@ -97,6 +108,20 @@
     .share svg { width: 24px; height: 24px; }
   }
   .soon { display: inline-block; background: var(--red); color: #fff; font-size: .65rem; padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 6px; font-family: system-ui, sans-serif; }
+  .today-card { padding: 18px 22px; margin-bottom: 4px; }
+  .today-row { font-size: 1rem; padding: 6px 0; }
+  .today-row + .today-row { border-top: 1px dotted var(--line); }
+  .today-row .lbl { font-family: system-ui, -apple-system, sans-serif; font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: block; }
+  .today-row a { color: var(--red); }
+  .fam-alert { margin: 8px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--red-soft); font-size: 1rem; }
+  .fam-alert.soon { background: #fff4cc; }
+  .family-edit { margin-top: 10px; font-size: .8rem; color: var(--muted); }
+  .family-edit summary { cursor: pointer; font-family: system-ui, -apple-system, sans-serif; }
+  .fam-help { margin: 8px 0; }
+  .fam-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dotted var(--line); color: var(--ink); }
+  .fam-item button, .fam-form button { font: inherit; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+  .fam-form { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .fam-form input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; min-width: 0; flex: 1 1 120px; }
   .paper-card { padding: 22px 24px; }
   .paper-mast { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; border-bottom: 3px double var(--ink); padding-bottom: 8px; margin-bottom: 6px; }
   .paper-name { font-size: 1.6rem; font-weight: 700; }
@@ -124,6 +149,22 @@
   .sieci-btn:hover { background: #a90d26; }
   .sieci-btn2 { margin-top: 8px; background: #fff; color: var(--red); border: 2px solid var(--red); }
   .sieci-btn2:hover { background: var(--red-soft); }
+  .lw-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 980px) { .lw-grid { grid-template-columns: minmax(0, 1fr); } }
+  .lw-card h3 { margin: 0 0 10px; font-size: 1.2rem; }
+  .stations { display: grid; gap: 8px; }
+  .stations button, .lw-btn { display: block; width: 100%; text-align: left; font: inherit; font-family: system-ui, -apple-system, sans-serif; font-weight: 600; font-size: .9rem;
+    padding: 12px 14px; border-radius: 12px; border: 2px solid var(--blue); background: #fff; color: var(--blue); cursor: pointer; text-decoration: none; margin-bottom: 8px; }
+  .stations button { margin: 0; }
+  .stations button.playing { background: var(--blue); color: #fff; }
+  .lw-btn { border-color: var(--red); color: var(--red); }
+  .lw-btn:hover { background: var(--red-soft); }
+  .lw-btn.gold { border-color: #b07800; color: #8f6200; }
+  .lw-btn.gold:hover { background: #fff4cc; }
+  .radio-status, .lw-note { font-size: .78rem; color: var(--muted); margin-top: 8px; }
+  .radio-status a { color: var(--blue); }
+  .mass-times { font-size: .85rem; margin-top: 6px; }
+  .mass-times b { font-variant-numeric: tabular-nums; }
   .shelf-nav { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: -4px 0 14px; }
   .shelf-nav .label { color: var(--muted); font-size: .9rem; }
   .shelf-nav .btns { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -169,6 +210,20 @@
   .more a { color: inherit; }
   footer { margin-top: 50px; font-size: .75rem; color: var(--muted); text-align: center; }
 </style>
+<script>
+// ---------- TEXT SIZE (A− / A+) — remembered on this device ----------
+(function () {
+  const STEPS = [0.9, 1, 1.15, 1.3, 1.45, 1.6];
+  let i; try { i = +localStorage.getItem("babcia-size"); } catch { }
+  if (!(i >= 0 && i < STEPS.length)) i = 1;
+  const apply = () => { document.documentElement.style.setProperty("--scale", STEPS[i]); try { localStorage.setItem("babcia-size", i); } catch { } };
+  apply();
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-size]"); if (!b) return;
+    i = Math.max(0, Math.min(STEPS.length - 1, i + (+b.dataset.size))); apply();
+  });
+})();
+</script>
 </head>
 <body>
 <div class="flag"></div>
@@ -181,9 +236,30 @@
     <div class="clocks">
       <div class="clock"><div class="where">🇳🇿 Auckland</div><div class="time" id="clock-akl">--:--</div></div>
       <div class="clock"><div class="where">🇵🇱 <span data-t="poland">Polska</span></div><div class="time" id="clock-pl">--:--</div></div>
+      <div class="size-btns" role="group" aria-label="Wielkość tekstu">
+        <button type="button" data-size="-1" aria-label="Mniejszy tekst">A−</button>
+        <button type="button" data-size="1" aria-label="Większy tekst">A+</button>
+      </div>
       <button class="lang" id="lang-btn" type="button">English</button>
     </div>
   </header>
+
+  <div class="card today-card" id="today-card">
+    <div class="today-row" id="imieniny-row"></div>
+    <div class="today-row" id="liturgy-row" hidden></div>
+    <div id="family-row"></div>
+    <details class="family-edit" id="family-edit">
+      <summary data-t="famEdit">⚙️ Rodzina: urodziny i imieniny</summary>
+      <p class="fam-help" data-t="famHelp">Wpisz bliskich — strona przypomni o urodzinach i imieninach. Zapisuje się tylko na tym urządzeniu.</p>
+      <div id="fam-list"></div>
+      <form id="fam-form" class="fam-form">
+        <input name="n" required placeholder="Imię (np. Mikołaj)" aria-label="Imię">
+        <input name="bd" placeholder="Urodziny dd.mm" aria-label="Urodziny" pattern="\d{1,2}\.\d{1,2}">
+        <input name="nd" placeholder="Imieniny dd.mm" aria-label="Imieniny" pattern="\d{1,2}\.\d{1,2}">
+        <button type="submit" data-t="famAdd">Dodaj</button>
+      </form>
+    </details>
+  </div>
 
   <h2 data-t="weather">Pogoda</h2>
   <div class="weather-grid">
@@ -221,6 +297,29 @@
     <a class="sieci-btn2" href="https://wpolityce.pl/wsieci-historii" target="_blank" rel="noopener">📜 <span data-t="sieciHist">Magazyn „wSieci Historii”</span></a>
   </div>
 
+  <h2 data-t="lwTitle">Radio, telewizja i Msza</h2>
+  <div class="lw-grid">
+    <div class="card lw-card">
+      <h3>📻 <span data-t="radio">Radio</span></h3>
+      <div class="stations" id="stations"></div>
+      <audio id="radio-audio" preload="none"></audio>
+      <div class="radio-status" id="radio-status" aria-live="polite"></div>
+    </div>
+    <div class="card lw-card">
+      <h3>📺 <span data-t="tv">Telewizja na żywo</span></h3>
+      <a class="lw-btn" href="https://wpolsce24.tv/video" target="_blank" rel="noopener">▶ wPolsce24</a>
+      <a class="lw-btn" href="https://polonia.tvp.pl/44562671/tvp-polonia-stream" target="_blank" rel="noopener">▶ TVP Polonia</a>
+      <a class="lw-btn" href="https://tv-trwam.pl/na-zywo" target="_blank" rel="noopener">▶ TV Trwam</a>
+      <p class="lw-note" data-t="tvNote">Otwiera się w nowej karcie. Przy pierwszym wejściu strona może zapytać o ciasteczka.</p>
+    </div>
+    <div class="card lw-card">
+      <h3>⛪ <span data-t="mass">Msza na żywo</span></h3>
+      <a class="lw-btn gold" href="https://www.youtube.com/@jasnagoraklasztorojcowpaul7943/live" target="_blank" rel="noopener">▶ Jasna Góra — <span data-t="chapel">Kaplica Cudownego Obrazu</span></a>
+      <a class="lw-btn gold" href="https://www.youtube.com/channel/UCsHNugP4z9aZC4Tl6n6imzw/live" target="_blank" rel="noopener">▶ Łagiewniki — <span data-t="mercy">Sanktuarium Bożego Miłosierdzia</span></a>
+      <div class="mass-times" id="mass-times"></div>
+    </div>
+  </div>
+
   <h2 data-t="shelfTitle">Na dziś: do czytania i oglądania</h2>
   <div class="shelf-nav" id="shelf-nav"></div>
   <div class="shelf" id="shelf"></div>
@@ -249,6 +348,7 @@
 </div>
 
 <script src="library.js"></script>
+<script src="imieniny.js"></script>
 <script>
 // ---------- EVENTS (edit here) ----------
 // start/end are YYYY-MM-DD. Events disappear automatically the day after `end`.
@@ -334,6 +434,14 @@ const T = {
     paperTitle: "Gazeta dnia", paperSrc: "wiadomości z wPolityce.pl", paperOpen: "Otwórz całą gazetę", paperErr: "Nie udało się pobrać wiadomości.",
     sieciTitle: "Tygodnik „Sieci” — najnowsze wydanie", sieciNote: "Nowe wydanie co tydzień w poniedziałek rano (czasu NZ). Trzeba być zalogowanym na wPolityce.pl.",
     sieciThisWeek: "Ostatnio w „Sieci”:", sieciRead: "Czytaj najnowsze wydanie „Sieci”", sieciHist: "Magazyn historyczny „wSieci Historii”",
+    nameDays: "Dziś imieniny obchodzą", famEdit: "⚙️ Rodzina: urodziny i imieniny", famHelp: "Wpisz bliskich — strona przypomni o urodzinach i imieninach. Zapisuje się tylko na tym urządzeniu.", famAdd: "Dodaj", famDel: "Usuń",
+    bdToday: (n) => `🎂 Dziś urodziny: <b>${n}</b>! Sto lat!`, ndToday: (n) => `🌷 Dziś imieniny: <b>${n}</b>! Wszystkiego najlepszego!`,
+    bdSoon: (n, d) => `🎂 Urodziny: <b>${n}</b> — ${d === 1 ? "jutro" : "za " + d + " dni"}`, ndSoon: (n, d) => `🌷 Imieniny: <b>${n}</b> — ${d === 1 ? "jutro" : "za " + d + " dni"}`,
+    lwTitle: "Radio, telewizja i Msza", radio: "Radio", tv: "Telewizja na żywo", mass: "Msza na żywo", chapel: "Kaplica Cudownego Obrazu", mercy: "Sanktuarium Bożego Miłosierdzia",
+    tvNote: "Otwiera się w nowej karcie. Przy pierwszym wejściu strona może zapytać o ciasteczka.",
+    playing: (n) => `▶ Gra: ${n}. Kliknij jeszcze raz, aby zatrzymać.`, connecting: "Łączenie…", radioErr: (n, u) => `Nie udało się włączyć ${n}. <a href="${u}" target="_blank" rel="noopener">Otwórz stronę stacji →</a>`,
+    nextMass: "Najbliższe Msze na Jasnej Górze (czas Auckland):", apel: "Apel Jasnogórski", chaplet: "Koronka w Łagiewnikach",
+    liturgy: "Liturgia dnia", gospel: "Ewangelia", saints: "Święci dnia", readMore: "Czytaj →", src: "Źródło: Evangelizo",
     comedyTitle: "Na wesoło 😄", comedy: "Kabaret", comedyFilm: "Komedia", more6: "Inne", comedySource: "Skecze z oficjalnych kanałów kabaretów na YouTube i klasyczne komedie z 35mm.online.",
     shelfTitle: "Na dziś: do czytania i oglądania", book: "Książka", film: "Film", doc: "Dokument",
     read: "Czytaj za darmo", watch: "Obejrzyj za darmo", next: "Następne", prev: "Poprzednie", backToday: "Dzisiejsze",
@@ -352,6 +460,14 @@ const T = {
     paperTitle: "Today's newspaper", paperSrc: "news from wPolityce.pl", paperOpen: "Open the whole newspaper", paperErr: "Couldn't load the news.",
     sieciTitle: "„Sieci” weekly — newest issue", sieciNote: "A new issue every Monday morning (NZ time). You need to be logged in to wPolityce.pl.",
     sieciThisWeek: "Lately in „Sieci”:", sieciRead: "Read the newest „Sieci” issue", sieciHist: "„wSieci Historii” history magazine",
+    nameDays: "Today's name days", famEdit: "⚙️ Family: birthdays and name days", famHelp: "Add family members — the page will remind you of birthdays and name days. Saved on this device only.", famAdd: "Add", famDel: "Remove",
+    bdToday: (n) => `🎂 Today is <b>${n}</b>'s birthday! Sto lat!`, ndToday: (n) => `🌷 Today is <b>${n}</b>'s name day!`,
+    bdSoon: (n, d) => `🎂 <b>${n}</b>'s birthday — ${d === 1 ? "tomorrow" : "in " + d + " days"}`, ndSoon: (n, d) => `🌷 <b>${n}</b>'s name day — ${d === 1 ? "tomorrow" : "in " + d + " days"}`,
+    lwTitle: "Radio, TV and Mass", radio: "Radio", tv: "Live TV", mass: "Live Mass", chapel: "Chapel of the Miraculous Image", mercy: "Divine Mercy Sanctuary",
+    tvNote: "Opens in a new tab. The first time, the site may ask about cookies.",
+    playing: (n) => `▶ Playing: ${n}. Tap again to stop.`, connecting: "Connecting…", radioErr: (n, u) => `Couldn't start ${n}. <a href="${u}" target="_blank" rel="noopener">Open the station's page →</a>`,
+    nextMass: "Next Masses at Jasna Góra (Auckland time):", apel: "Jasna Góra Appeal", chaplet: "Chaplet at Łagiewniki",
+    liturgy: "Today's liturgy", gospel: "Gospel", saints: "Saints of the day", readMore: "Read →", src: "Source: Evangelizo",
     comedyTitle: "Something funny 😄", comedy: "Cabaret", comedyFilm: "Comedy film", more6: "More", comedySource: "Sketches from the cabarets' official YouTube channels and classic comedies from 35mm.online.",
     shelfTitle: "Today's picks: to read and watch", book: "Book", film: "Film", doc: "Documentary",
     read: "Read it free", watch: "Watch it free", next: "Next", prev: "Previous", backToday: "Today's",
@@ -743,6 +859,143 @@ function renderComedy() {
   if (t) t.onclick = () => { comedyOffset = 0; renderComedy(); };
 }
 
+// ---------- TODAY: name days (imieniny.js) + family reminders (stored on this device only) ----------
+const famKey = "babcia-family";
+const getFamily = () => { try { return JSON.parse(localStorage.getItem(famKey) || "[]"); } catch { return []; } };
+const setFamily = (f) => { try { localStorage.setItem(famKey, JSON.stringify(f)); } catch { } };
+const mmdd = (d) => `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const parseDM = (s) => { const m = (s || "").trim().match(/^(\d{1,2})\.(\d{1,2})$/); return m ? `${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : ""; };
+const showDM = (k) => k ? `${+k.slice(3)}.${k.slice(0, 2)}` : "—";
+function daysUntil(key, today) {
+  if (!key) return null;
+  const [m, d] = key.split("-").map(Number);
+  let t = new Date(today.getFullYear(), m - 1, d);
+  if (t < today) t = new Date(today.getFullYear() + 1, m - 1, d);
+  return Math.round((t - today) / 86400000);
+}
+function renderToday() {
+  const L = T[lang], today = aklToday();
+  const names = (window.IMIENINY || {})[mmdd(today)];
+  document.getElementById("imieniny-row").innerHTML = names ? `<span class="lbl">🌷 ${L.nameDays}</span>${names}` : "";
+  const alerts = [];
+  for (const p of getFamily()) {
+    for (const [key, today0, soon] of [[p.bd, L.bdToday, L.bdSoon], [p.nd, L.ndToday, L.ndSoon]]) {
+      const d = daysUntil(key, today);
+      if (d === 0) alerts.push([0, `<div class="fam-alert">${today0(p.n)}</div>`]);
+      else if (d !== null && d <= 14) alerts.push([d, `<div class="fam-alert soon">${soon(p.n, d)}</div>`]);
+    }
+  }
+  document.getElementById("family-row").innerHTML = alerts.sort((a, b) => a[0] - b[0]).map(a => a[1]).join("");
+  document.getElementById("fam-list").innerHTML = getFamily().map((p, i) =>
+    `<div class="fam-item"><span>${p.n.replace(/[<>&]/g, "")} · 🎂 ${showDM(p.bd)} · 🌷 ${showDM(p.nd)}</span><button type="button" data-del="${i}">${L.famDel}</button></div>`).join("");
+}
+document.getElementById("fam-form").onsubmit = (e) => {
+  e.preventDefault();
+  const f = e.target, fam = getFamily();
+  fam.push({ n: f.n.value.trim(), bd: parseDM(f.bd.value), nd: parseDM(f.nd.value) });
+  setFamily(fam); f.reset(); renderToday();
+};
+document.getElementById("fam-list").onclick = (e) => {
+  const b = e.target.closest("[data-del]"); if (!b) return;
+  const fam = getFamily(); fam.splice(+b.dataset.del, 1); setFamily(fam); renderToday();
+};
+
+// ---------- RADIO (official streams; Polskie Radio uses HLS, which iPad/iPhone play natively) ----------
+const STATIONS = [
+  { n: "Polskie Radio Jedynka", u: "https://stream11.polskieradio.pl/pr1/pr1.sdp/playlist.m3u8", page: "https://jedynka.polskieradio.pl/" },
+  { n: "Radio Maryja", u: "https://radiomaryja.fastcast4u.com/proxy/radiomaryja?mp=/1", page: "https://www.radiomaryja.pl/live/" },
+  { n: "Radio Jasna Góra", u: "https://online.radiojasnagora.pl:9000/rjg", page: "https://www.radiojasnagora.pl/player" },
+  { n: "Polskie Radio 24", u: "https://stream15.polskieradio.pl/pr24/pr24.sdp/playlist.m3u8", page: "https://polskieradio24.pl/" },
+  { n: "Polskie Radio Trójka", u: "https://stream13.polskieradio.pl/pr3/pr3.sdp/playlist.m3u8", page: "https://trojka.polskieradio.pl/" },
+];
+let radioNow = -1, hls = null;
+const loadHlsJs = () => window.Hls ? Promise.resolve() : new Promise((ok, bad) => {
+  const sc = document.createElement("script");
+  sc.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"; sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc);
+});
+function renderStations() {
+  document.getElementById("stations").innerHTML = STATIONS.map((st, i) =>
+    `<button type="button" data-st="${i}" class="${i === radioNow ? "playing" : ""}">${i === radioNow ? "⏸" : "▶"} ${st.n}</button>`).join("");
+}
+async function playStation(i) {
+  const a = document.getElementById("radio-audio"), status = document.getElementById("radio-status"), L = T[lang];
+  if (hls) { hls.destroy(); hls = null; }
+  a.pause();
+  if (i === radioNow) { radioNow = -1; status.textContent = ""; a.removeAttribute("src"); renderStations(); return; }
+  radioNow = i; renderStations();
+  const st = STATIONS[i];
+  status.textContent = L.connecting;
+  const fail = () => { if (radioNow === i) { status.innerHTML = L.radioErr(st.n, st.page); radioNow = -1; renderStations(); } };
+  try {
+    if (/\.m3u8/.test(st.u) && !a.canPlayType("application/vnd.apple.mpegurl")) {
+      await loadHlsJs();
+      if (!window.Hls || !Hls.isSupported()) throw new Error("no HLS");
+      hls = new Hls(); hls.loadSource(st.u); hls.attachMedia(a);
+      hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) fail(); });
+    } else {
+      a.src = st.u;
+    }
+    a.onerror = fail;
+    await a.play();
+    status.textContent = L.playing(st.n);
+  } catch (e) { fail(); }
+}
+document.getElementById("stations").onclick = (e) => { const b = e.target.closest("[data-st]"); if (b) playStation(+b.dataset.st); };
+
+// ---------- MASS TIMES: Polish schedules converted to Auckland time ----------
+function tzOffsetMin(date, tz) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
+    .formatToParts(date).map(x => [x.type, x.value]));
+  return (Date.UTC(+p.year, p.month - 1, +p.day, +p.hour, +p.minute) - Math.floor(date.getTime() / 60000) * 60000) / 60000;
+}
+function warsawTime(y, m, d, hh, mm) { // a wall-clock time in Poland -> real Date
+  const guess = new Date(Date.UTC(y, m, d, hh, mm));
+  return new Date(guess.getTime() - tzOffsetMin(guess, "Europe/Warsaw") * 60000);
+}
+const JG_WEEKDAY = ["6:00", "7:00", "7:30", "9:30", "11:00", "13:30", "15:30", "17:00", "18:30"];
+const JG_SUNDAY = ["6:00", "7:00", "9:30", "11:00", "12:30", "14:00", "15:30", "17:00", "18:30", "20:00"];
+function renderMassTimes() {
+  const L = T[lang], now = new Date();
+  const fmt = (d) => new Intl.DateTimeFormat(locale(), { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: "Pacific/Auckland" }).format(d);
+  const wp = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Warsaw", year: "numeric", month: "numeric", day: "numeric", weekday: "short" }).formatToParts(now).map(x => [x.type, x.value]));
+  const masses = [], extras = [];
+  for (let k = -1; k <= 1; k++) {
+    const base = new Date(Date.UTC(+wp.year, wp.month - 1, +wp.day + k));
+    const [y, m, d] = [base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate()];
+    for (const t of (base.getUTCDay() === 0 ? JG_SUNDAY : JG_WEEKDAY)) { const [h, mi] = t.split(":"); masses.push(warsawTime(y, m, d, +h, +mi)); }
+    extras.push([L.apel, warsawTime(y, m, d, 21, 0)], [L.chaplet, warsawTime(y, m, d, 15, 0)]);
+  }
+  const next = masses.filter(d => d > now).sort((a, b) => a - b).slice(0, 3);
+  const ex = extras.filter(([, d]) => d > now).sort((a, b) => a[1] - b[1]).slice(0, 2);
+  document.getElementById("mass-times").innerHTML =
+    `<div>${L.nextMass}</div><div>${next.map(d => `<b>${fmt(d)}</b>`).join(" · ")}</div>` +
+    ex.map(([n, d]) => `<div>${n}: <b>${fmt(d)}</b></div>`).join("");
+}
+
+// ---------- LITURGY OF THE DAY (Evangelizo feed, Polish) — reference + link only ----------
+let liturgyCache = null;
+async function loadLiturgy() {
+  const row = document.getElementById("liturgy-row"), L = T[lang];
+  const d = aklToday(), ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+  const iso = `${ymd.slice(0, 4)}-${ymd.slice(4, 6)}-${ymd.slice(6)}`;
+  try {
+    if (!liturgyCache || liturgyCache.ymd !== ymd) {
+      const get = (q) => fetch(`https://feed.evangelizo.org/v2/reader.php?date=${ymd}&lang=PL&${q}`).then(r => r.ok ? r.text() : "");
+      const [title, gospel, saint] = await Promise.all([get("type=liturgic_t"), get("type=reading_lt&content=GSP"), get("type=saint")]);
+      const txt = (h) => { const e = document.createElement("div"); e.innerHTML = h; return e.textContent.replace(/\s+/g, " ").trim(); };
+      const firstSaint = (() => { const e = document.createElement("div"); e.innerHTML = saint; return (e.querySelector("a")?.textContent || txt(saint).split(/\s{2,}|\n/)[0] || "").trim(); })();
+      liturgyCache = { ymd, title: txt(title), gospel: txt(gospel).replace(/\.$/, ""), saint: firstSaint.replace(/^Śwśw\.\s*/, "Święci ") };
+    }
+    const c = liturgyCache;
+    if (!c.gospel && !c.title) return;
+    row.hidden = false;
+    row.innerHTML = `<span class="lbl">✝️ ${L.liturgy}</span>${c.title ? `<i>${c.title}</i><br>` : ""}
+      ${c.gospel ? `${L.gospel}: <b>${c.gospel.replace(/^Ewangelia /, "")}</b> <a href="https://ewangelia.org/PL/gospel/${iso}" target="_blank" rel="noopener">${L.readMore}</a>` : ""}
+      ${c.saint ? `<br>${L.saints}: ${c.saint} <a href="https://ewangelia.org/PL/saints/${iso}" target="_blank" rel="noopener">${L.readMore}</a>` : ""}
+      <span class="lbl" style="text-transform:none;font-weight:400;margin-top:4px">${L.src}</span>`;
+  } catch (e) { /* leave hidden */ }
+}
+
 // ---------- NEWSPAPER HEADLINES (from /api/gazeta, see netlify/functions/gazeta.mjs) ----------
 let paperData = null;
 async function loadHeadlines() {
@@ -772,6 +1025,10 @@ async function loadHeadlines() {
 // ---------- BOOT ----------
 function renderAll() {
   renderHeader(); tickClocks(); setupCities();
+  renderToday();
+  loadLiturgy();
+  renderStations();
+  renderMassTimes();
   renderShelf();
   renderComedy();
   loadHeadlines();
