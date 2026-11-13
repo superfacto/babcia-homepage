@@ -106,12 +106,18 @@
   .read-btn { display: inline-block; background: var(--red); color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 14px;
     font-family: system-ui, -apple-system, sans-serif; font-weight: 600; font-size: .9rem; }
   .read-btn:hover { background: #a90d26; }
+  .book-nav { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .book-nav button { font: inherit; font-family: system-ui, -apple-system, sans-serif; font-size: .85rem; font-weight: 600;
+    padding: 9px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; border: 2px solid var(--red); background: #fff; color: var(--red); }
+  .book-nav button:hover { background: var(--red-soft); }
+  .book-nav .book-today { border-color: var(--line); color: var(--muted); }
   .audio-note { color: var(--muted); font-size: .85rem; }
   @media (max-width: 520px) {
     .book { display: block; }
     .book-cover { float: left; width: 88px; margin: 0 14px 8px 0; }
     .book h3 { font-size: 1.2rem; }
-    .book-actions { clear: both; }
+    .book-actions, .book-nav { clear: both; }
+    .book-nav button { flex: 1; }
     .read-btn { display: block; text-align: center; width: 100%; }
   }
   .more { margin-top: 10px; font-size: .9rem; color: var(--muted); }
@@ -252,7 +258,7 @@ const T = {
     moreAt: "Więcej:", footer: "Pogoda: Open-Meteo / MET Norway · Wydarzenia sprawdzone",
     feels: "odczuwalna", wind: "wiatr", now: "Teraz", details: "Szczegóły",
     noEvents: "Na razie brak — sprawdź linki poniżej.", today: "dziś", tomorrow: "jutro", onNow: "trwa teraz", share: "Wyślij to komuś SMS‑em",
-    bookTitle: "Książka dnia", bookWhat: "O czym:", bookWhy: "Dlaczego warto:", read: "Czytaj za darmo",
+    bookTitle: "Książka dnia", bookWhat: "O czym:", bookWhy: "Dlaczego warto:", read: "Czytaj za darmo", bookNext: "Następna książka", bookToday: "Wróć do dzisiejszej",
     audio: "Jest też audiobook", readTime: (m) => `ok. ${m} min czytania`,
     bookSource: "Darmowe e-booki z Wolnych Lektur — nowa książka codziennie.", details2: "Więcej",
     until: "do", weatherErr: "Nie udało się pobrać pogody. Spróbuj odświeżyć stronę.", lang: "English"
@@ -264,7 +270,7 @@ const T = {
     moreAt: "More:", footer: "Weather: Open-Meteo / MET Norway · Events checked",
     feels: "feels like", wind: "wind", now: "Now", details: "Details",
     noEvents: "Nothing right now — see the links below.", today: "today", tomorrow: "tomorrow", onNow: "on now", share: "Text this to someone",
-    bookTitle: "Book of the day", bookWhat: "What it is:", bookWhy: "Why it's worth reading:", read: "Read it free",
+    bookTitle: "Book of the day", bookWhat: "What it is:", bookWhy: "Why it's worth reading:", read: "Read it free", bookNext: "Next book", bookToday: "Back to today's",
     audio: "Also available as an audiobook", readTime: (m) => `about ${m} min read`,
     bookSource: "Free Polish e-books from Wolne Lektury — a new one every day.", details2: "More",
     until: "until", weatherErr: "Couldn't load the weather. Try refreshing the page.", lang: "Polski"
@@ -680,10 +686,11 @@ const BOOKS = [
          "The first part of Sienkiewicz's Trilogy, written „to lift people's hearts”. Zagłoba is one of the funniest characters in Polish books."] }
 ];
 
+let bookOffset = 0; // 0 = today's book; "Next book" adds 1
 function bookOfTheDay() {
   const today = aklToday();
   const dayNum = Math.floor(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000);
-  return BOOKS[dayNum % BOOKS.length];
+  return BOOKS[(dayNum + bookOffset) % BOOKS.length];
 }
 
 function renderBook() {
@@ -704,7 +711,14 @@ function renderBook() {
         <a class="read-btn" href="${url}" target="_blank" rel="noopener">📖 ${L.read}</a>
         ${b.audio ? `<span class="audio-note">🎧 ${L.audio}</span>` : ""}
       </div>
+      <div class="book-nav">
+        ${bookOffset ? `<button type="button" class="book-today" id="book-today">↺ ${L.bookToday}</button>` : ""}
+        <button type="button" class="book-next" id="book-next">${L.bookNext} →</button>
+      </div>
     </div>`;
+  document.getElementById("book-next").onclick = () => { bookOffset++; renderBook(); };
+  const back = document.getElementById("book-today");
+  if (back) back.onclick = () => { bookOffset = 0; renderBook(); };
 }
 
 // ---------- BOOT ----------
