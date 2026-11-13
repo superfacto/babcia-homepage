@@ -9,6 +9,8 @@ A simple, big-text homepage for a Polish grandma in Auckland.
 - **Clocks** — Auckland and Poland time.
 - **Gazeta Babci** — a daily newspaper page (`gazeta.html`) built from wPolityce.pl's official RSS feeds
   by a Netlify function (`netlify/functions/gazeta.mjs`, served at `/api/gazeta`, cached 15 min). Crime section left out.
+- **Tygodnik „Sieci” card** — latest headlines from the weekly + buttons to the newest issue
+  (wpolityce.pl/tygodnik-sieci) and wSieci Historii. Reading the full issue needs a wPolityce e-subscription.
 - **Events** — Polish community events in Auckland first, then other Auckland events.
   Past events hide themselves automatically.
 - **Daily shelf** — 10 picks a day (books from Wolne Lektury + free Polish films) from `library.js`;

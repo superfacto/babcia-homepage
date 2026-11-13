@@ -111,6 +111,19 @@
   .paper-btn { display: block; text-align: center; margin-top: 12px; background: var(--ink); color: #fff; text-decoration: none; padding: 14px 18px; border-radius: 14px;
     font-family: system-ui, -apple-system, sans-serif; font-weight: 600; font-size: .95rem; }
   .paper-btn:hover { background: #000; }
+  .sieci-card { margin-top: 16px; padding: 22px 24px; border-top: 6px solid var(--red); }
+  .sieci-head { display: flex; gap: 14px; align-items: center; margin-bottom: 10px; }
+  .sieci-logo { background: var(--red); color: #fff; font-family: system-ui, -apple-system, sans-serif; font-weight: 900; font-style: italic;
+    font-size: 1.3rem; letter-spacing: .02em; padding: 6px 12px; transform: skewX(-8deg); border-radius: 3px; flex: none; }
+  .sieci-title { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+  .sieci-note { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+  .sieci-sub { font-family: system-ui, -apple-system, sans-serif; font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+  .sieci-btn, .sieci-btn2 { display: block; text-align: center; margin-top: 12px; text-decoration: none; padding: 14px 18px; border-radius: 14px;
+    font-family: system-ui, -apple-system, sans-serif; font-weight: 600; font-size: .95rem; }
+  .sieci-btn { background: var(--red); color: #fff; }
+  .sieci-btn:hover { background: #a90d26; }
+  .sieci-btn2 { margin-top: 8px; background: #fff; color: var(--red); border: 2px solid var(--red); }
+  .sieci-btn2:hover { background: var(--red-soft); }
   .shelf-nav { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: -4px 0 14px; }
   .shelf-nav .label { color: var(--muted); font-size: .9rem; }
   .shelf-nav .btns { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -192,6 +205,20 @@
     <div class="paper-mast"><span class="paper-name">Gazeta Babci</span><span class="paper-src" data-t="paperSrc">wiadomości z wPolityce.pl</span></div>
     <ol class="headlines" id="headlines"><li class="muted" data-t="loading">Ładowanie…</li></ol>
     <a class="paper-btn" href="gazeta.html">📰 <span data-t="paperOpen">Otwórz całą gazetę</span></a>
+  </div>
+
+  <div class="card sieci-card">
+    <div class="sieci-head">
+      <span class="sieci-logo">SIECI</span>
+      <div>
+        <div class="sieci-title" data-t="sieciTitle">Tygodnik „Sieci” — najnowsze wydanie</div>
+        <div class="sieci-note" data-t="sieciNote">Nowe wydanie co tydzień w poniedziałek rano (czasu NZ). Trzeba być zalogowanym na wPolityce.pl.</div>
+      </div>
+    </div>
+    <div class="sieci-sub" data-t="sieciThisWeek">W tym tygodniu w „Sieci”:</div>
+    <ol class="headlines" id="sieci-headlines"><li class="muted" data-t="loading">Ładowanie…</li></ol>
+    <a class="sieci-btn" href="https://wpolityce.pl/tygodnik-sieci" target="_blank" rel="noopener">📖 <span data-t="sieciRead">Czytaj najnowsze wydanie „Sieci”</span></a>
+    <a class="sieci-btn2" href="https://wpolityce.pl/wsieci-historii" target="_blank" rel="noopener">📜 <span data-t="sieciHist">Magazyn „wSieci Historii”</span></a>
   </div>
 
   <h2 data-t="shelfTitle">Na dziś: do czytania i oglądania</h2>
@@ -305,6 +332,8 @@ const T = {
     feels: "odczuwalna", wind: "wiatr", now: "Teraz", details: "Szczegóły",
     noEvents: "Na razie brak — sprawdź linki poniżej.", today: "dziś", tomorrow: "jutro", onNow: "trwa teraz", share: "Wyślij to komuś SMS‑em",
     paperTitle: "Gazeta dnia", paperSrc: "wiadomości z wPolityce.pl", paperOpen: "Otwórz całą gazetę", paperErr: "Nie udało się pobrać wiadomości.",
+    sieciTitle: "Tygodnik „Sieci” — najnowsze wydanie", sieciNote: "Nowe wydanie co tydzień w poniedziałek rano (czasu NZ). Trzeba być zalogowanym na wPolityce.pl.",
+    sieciThisWeek: "Ostatnio w „Sieci”:", sieciRead: "Czytaj najnowsze wydanie „Sieci”", sieciHist: "Magazyn historyczny „wSieci Historii”",
     comedyTitle: "Na wesoło 😄", comedy: "Kabaret", comedyFilm: "Komedia", more6: "Inne", comedySource: "Skecze z oficjalnych kanałów kabaretów na YouTube i klasyczne komedie z 35mm.online.",
     shelfTitle: "Na dziś: do czytania i oglądania", book: "Książka", film: "Film", doc: "Dokument",
     read: "Czytaj za darmo", watch: "Obejrzyj za darmo", next: "Następne", prev: "Poprzednie", backToday: "Dzisiejsze",
@@ -321,6 +350,8 @@ const T = {
     feels: "feels like", wind: "wind", now: "Now", details: "Details",
     noEvents: "Nothing right now — see the links below.", today: "today", tomorrow: "tomorrow", onNow: "on now", share: "Text this to someone",
     paperTitle: "Today's newspaper", paperSrc: "news from wPolityce.pl", paperOpen: "Open the whole newspaper", paperErr: "Couldn't load the news.",
+    sieciTitle: "„Sieci” weekly — newest issue", sieciNote: "A new issue every Monday morning (NZ time). You need to be logged in to wPolityce.pl.",
+    sieciThisWeek: "Lately in „Sieci”:", sieciRead: "Read the newest „Sieci” issue", sieciHist: "„wSieci Historii” history magazine",
     comedyTitle: "Something funny 😄", comedy: "Cabaret", comedyFilm: "Comedy film", more6: "More", comedySource: "Sketches from the cabarets' official YouTube channels and classic comedies from 35mm.online.",
     shelfTitle: "Today's picks: to read and watch", book: "Book", film: "Film", doc: "Documentary",
     read: "Read it free", watch: "Watch it free", next: "Next", prev: "Previous", backToday: "Today's",
@@ -727,8 +758,14 @@ async function loadHeadlines() {
       .sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
     const esc = (t = "") => t.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     el.innerHTML = top.map(it => `<li><span class="k">${esc(it.sec)}</span><a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.title)}</a></li>`).join("");
+    const sieci = (paperData.sections.find(s => s.slug === "tygodniksieci")?.items || [])
+      .sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+    document.getElementById("sieci-headlines").innerHTML = sieci.length
+      ? sieci.map(it => `<li><a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.title)}</a></li>`).join("")
+      : "";
   } catch (e) {
     el.innerHTML = `<li class="muted">${T[lang].paperErr}</li>`;
+    document.getElementById("sieci-headlines").innerHTML = "";
   }
 }
 
